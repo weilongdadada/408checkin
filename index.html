@@ -46,6 +46,19 @@ header{display:flex;flex-direction:column;align-items:center;gap:12px;padding-bo
 .reward button{margin-left:auto;background:var(--strong);color:#101013;border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
 .reward button:disabled{background:var(--panel2);color:var(--muted);cursor:not-allowed}
 .reward .rules{color:var(--dim);font-size:12px;margin-top:12px;border-top:1px solid var(--line);padding-top:10px;line-height:1.8}
+.seat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:14px 0}
+.seat-top{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.seat .k{color:var(--muted);font-size:12px}
+.seat .v{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:3px}
+.seat .s{color:var(--dim);font-size:12px;margin-top:3px}
+.seat-btns{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.seat-btns button{border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid var(--line);background:var(--panel2);color:var(--text)}
+.seat-btns button.in-btn{background:var(--ok);color:#0d0d0d;border-color:var(--ok)}
+.seat-btns button.out-btn{background:var(--strong);color:#101013;border-color:var(--strong)}
+.seat-btns button:disabled{background:var(--panel2);color:var(--muted);cursor:not-allowed}
+.seat-log{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:6px}
+.seat-log .row{display:flex;gap:12px;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.seat-log .row b{color:var(--text);font-weight:500}
 h2{font-size:15px;font-weight:600;margin:24px 0 10px;letter-spacing:1px}
 ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
 li.task{display:flex;align-items:flex-start;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
@@ -100,6 +113,7 @@ footer{margin-top:30px;color:var(--dim);font-size:12px;text-align:center;line-he
   li.task{flex-wrap:wrap}
   .range{min-width:0}
   .act{margin-left:auto}
+  .seat-btns{margin-left:0}
 }
 </style>
 </head>
@@ -136,6 +150,18 @@ footer{margin-top:30px;color:var(--dim);font-size:12px;text-align:center;line-he
     <div class="next" id="nowNext"></div>
   </div>
 
+  <div class="seat">
+    <div class="seat-top">
+      <div><div class="k">今日在考研位</div><div class="v" id="seatToday">0 分钟</div><div class="s" id="seatStatus">未打卡</div></div>
+      <div><div class="k">本周累计</div><div class="v" id="seatWeek">0</div><div class="s">周一至周日</div></div>
+      <div class="seat-btns">
+        <button type="button" id="seatIn" class="in-btn">🚪 到达考研位</button>
+        <button type="button" id="seatOut" class="out-btn">🏠 离开考研位</button>
+      </div>
+    </div>
+    <div class="seat-log" id="seatLog"></div>
+  </div>
+
   <div class="reward">
     <div class="reward-top">
       <div><div class="k">我的积分</div><div class="v" id="ptNow">0</div><div class="s">完成 +10 ｜ 未完成 -5 ｜ 每日全勤 +10</div></div>
@@ -154,6 +180,9 @@ footer{margin-top:30px;color:var(--dim);font-size:12px;text-align:center;line-he
 
   <h2>完成率趋势</h2>
   <div class="chart-box" id="trendChart"></div>
+
+  <h2>在座时长趋势</h2>
+  <div class="chart-box" id="seatChart"></div>
 
   <h2>打卡日历</h2>
   <div class="legend">
@@ -174,7 +203,7 @@ footer{margin-top:30px;color:var(--dim);font-size:12px;text-align:center;line-he
     <input type="file" id="importFile" accept=".json,application/json" hidden>
   </div>
 
-  <footer>数据来源：王道408网课学习计划表（2026.08.29–09.28）<br>打卡记录仅保存在本浏览器，支持导出/导入备份，不会上传。</footer>
+  <footer>数据来源：王道408网课学习计划表（2026.08.29–09.28）<br>打卡与在座记录仅保存在本浏览器，支持导出/导入备份，不会上传。</footer>
 </div>
 
 <script>
@@ -185,6 +214,7 @@ const STORE_KEY = "wd408_check_v2";
 const LEGACY_KEY = "wd408_check_v1";
 const NOTES_KEY = "wd408_notes_v1";
 const WC_KEY = "wd408_wc_v1";
+const STUDY_KEY = "wd408_study_v1";
 const TICKET_EVERY = 150;
 
 function pad2(n){ return String(n).padStart(2,"0"); }
@@ -208,6 +238,7 @@ function isoWeekKey(d){
 let marks = {};
 let notes = {};
 let wc = {weeks: []};
+let study = {sessions: []};
 function normalizeMarks(obj){
   const out = {};
   Object.keys(obj || {}).forEach(function(k){
@@ -241,6 +272,15 @@ function loadWc(){
   try { const obj = JSON.parse(localStorage.getItem(WC_KEY) || "{}"); wc = {weeks: Array.isArray(obj.weeks) ? obj.weeks : []}; } catch(e){}
 }
 function saveWc(){ try { localStorage.setItem(WC_KEY, JSON.stringify(wc)); } catch(e){} }
+function loadStudy(){
+  try {
+    const obj = JSON.parse(localStorage.getItem(STUDY_KEY) || "{}");
+    study.sessions = (Array.isArray(obj.sessions) ? obj.sessions : []).filter(function(s){
+      return s && s.d && s.i;
+    }).map(function(s){ return {d:String(s.d), i:String(s.i), o:s.o ? String(s.o) : null}; });
+  } catch(e){}
+}
+function saveStudy(){ try { localStorage.setItem(STUDY_KEY, JSON.stringify(study)); } catch(e){} }
 function pruneMarks(){
   const valid = {};
   SCHEDULE.days.forEach(function(day){ day.events.forEach(function(_, i){ valid[evId(day.date, i)] = true; }); });
@@ -301,6 +341,121 @@ function points(){
 function tickets(){
   const p = points();
   return Math.max(0, Math.floor(p.earned / TICKET_EVERY) - wc.weeks.length);
+}
+
+// ---------- 考研位 ----------
+function openSession(){ return study.sessions.find(function(s){ return !s.o; }) || null; }
+function sessionMinutes(s, now){
+  const end = s.o ? new Date(s.o) : now;
+  return Math.max(0, Math.round((end - new Date(s.i)) / 60000));
+}
+function dayStudyMinutes(dateStr, now){
+  return study.sessions.reduce(function(acc, s){
+    if (s.d !== dateStr) return acc;
+    return acc + sessionMinutes(s, now);
+  }, 0);
+}
+function weekStudyMinutes(now){
+  const d = new Date();
+  const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7));
+  const startKey = dateKey(monday);
+  return study.sessions.reduce(function(acc, s){
+    if (s.d >= startKey) return acc + sessionMinutes(s, now);
+    return acc;
+  }, 0);
+}
+function closeStaleSessions(){
+  const today = dateKey(new Date());
+  let changed = false;
+  study.sessions.forEach(function(s){
+    if (!s.o && s.d !== today){ s.o = s.d + "T23:59:00"; changed = true; }
+  });
+  if (changed) saveStudy();
+}
+function fmtHM(min){
+  const h = Math.floor(min / 60), m = min % 60;
+  return h ? h + "小时" + m + "分" : m + "分钟";
+}
+function fmtHMshort(min){
+  const h = Math.floor(min / 60), m = min % 60;
+  return h ? h + "h" + pad2(m) + "m" : m + "m";
+}
+function hmOf(iso){
+  const d = new Date(iso);
+  return pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+}
+function renderSeat(){
+  const now = new Date();
+  const today = dateKey(now);
+  const open = openSession();
+  const inBtn = $("seatIn"), outBtn = $("seatOut");
+  if (open && open.d === today){
+    $("seatStatus").textContent = "在考研位中 · 已待 " + fmtHM(sessionMinutes(open, now));
+    inBtn.disabled = true;
+    outBtn.disabled = false;
+  } else {
+    $("seatStatus").textContent = open ? "有未结束记录（已自动结算）" : (dayStudyMinutes(today, now) > 0 ? "已离开" : "今日尚未到达");
+    inBtn.disabled = false;
+    outBtn.disabled = true;
+  }
+  $("seatToday").textContent = fmtHM(dayStudyMinutes(today, now));
+  $("seatWeek").textContent = fmtHM(weekStudyMinutes(now));
+  const log = $("seatLog");
+  log.innerHTML = "";
+  const rows = study.sessions.filter(function(s){ return s.d === today; }).sort(function(a, b){ return a.i < b.i ? -1 : 1; });
+  if (!rows.length){
+    const empty = document.createElement("div");
+    empty.className = "row";
+    empty.textContent = "今天还没有到达记录。";
+    log.appendChild(empty);
+  } else {
+    rows.forEach(function(s){
+      const r = document.createElement("div");
+      r.className = "row";
+      const openNow = !s.o;
+      const span = document.createElement("span");
+      span.innerHTML = hmOf(s.i) + " – " + (openNow ? "至今" : hmOf(s.o)) + "　<b>" + fmtHM(sessionMinutes(s, now)) + "</b>";
+      r.appendChild(span);
+      log.appendChild(r);
+    });
+  }
+}
+function renderSeatChart(){
+  const box = $("seatChart");
+  const now = new Date();
+  const today = dateKey(now);
+  const days = SCHEDULE.days.filter(function(d){ return d.date <= today; });
+  const data = days.map(function(d){ return {date:d.date, min:dayStudyMinutes(d.date, now)}; });
+  if (!data.some(function(x){ return x.min > 0; })){
+    box.innerHTML = '<div class="empty">点击“🚪 到达考研位”开始记录后，这里会显示每天在座时长曲线。</div>';
+    return;
+  }
+  const maxMin = data.reduce(function(a, x){ return Math.max(a, x.min); }, 0);
+  const yMax = Math.max(2, Math.ceil(maxMin / 120) * 2); // 小时刻度
+  const W = box.clientWidth || 640, H = 170, L = 42, R = 12, T = 14, B = 22;
+  const x = function(i){ return L + i * (W - L - R) / Math.max(1, data.length - 1); };
+  const y = function(min){ return T + (H - T - B) * (1 - min / (yMax * 60)); };
+  let svg = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" height="' + H + '" role="img" aria-label="每天在座时长趋势">';
+  for (let g = 0; g <= yMax; g += 2){
+    const yy = y(g * 60);
+    svg += '<line x1="' + L + '" y1="' + yy + '" x2="' + (W - R) + '" y2="' + yy + '" stroke="#2b2b31" stroke-width="1"/>';
+    svg += '<text x="' + (L - 5) + '" y="' + (yy + 3) + '" fill="#9b9ba4" font-size="10" text-anchor="end">' + g + "h</text>";
+  }
+  data.forEach(function(d, i){
+    if (i % 5 === 0 || i === data.length - 1){
+      svg += '<text x="' + x(i) + '" y="' + (H - 6) + '" fill="#9b9ba4" font-size="9" text-anchor="middle">' + d.date.slice(5).replace("-", ".") + "</text>";
+    }
+  });
+  const pts = data.map(function(d, i){ return {x:i, y:y(d.min)}; });
+  const line = pts.map(function(p){ return x(p.x).toFixed(1) + "," + p.y.toFixed(1); }).join(" ");
+  svg += '<polyline points="' + line + '" fill="none" stroke="#8ab4f8" stroke-width="1.5"/>';
+  data.forEach(function(d, i){
+    if (d.min <= 0) return;
+    const c = d.min >= 240 ? "#7fd49a" : d.min >= 120 ? "#e8c97a" : "#9b9ba4";
+    svg += '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(d.min).toFixed(1) + '" r="3" fill="' + c + '"/>';
+  });
+  svg += "</svg>";
+  box.innerHTML = svg;
 }
 
 let viewDate = new Date();
@@ -447,11 +602,6 @@ function markEv(dateStr, i, s){
   marks[evId(dateStr, i)] = {s:s, t:new Date().toISOString()};
   saveMarks();
   renderAll();
-}
-
-function fmtHM(min){
-  const h = Math.floor(min / 60), m = min % 60;
-  return h ? h + "小时" + m + "分" : m + "分钟";
 }
 
 function renderStats(nowMin){
@@ -645,14 +795,16 @@ function renderAll(){
   renderNow(nowMin);
   renderTasks(nowMin);
   renderStats(nowMin);
+  renderSeat();
   renderCourses();
   renderTrend();
+  renderSeatChart();
   renderCalendar();
   renderLog();
 }
 
 function exportData(){
-  const payload = {version:3, exportedAt:new Date().toISOString(), marks:marks, notes:notes, wc:wc};
+  const payload = {version:4, exportedAt:new Date().toISOString(), marks:marks, notes:notes, wc:wc, study:study};
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -670,13 +822,21 @@ function importData(file){
       const incMarks = normalizeMarks(obj.marks || obj);
       const incNotes = (obj.notes && typeof obj.notes === "object") ? obj.notes : {};
       const incWc = (obj.wc && Array.isArray(obj.wc.weeks)) ? obj.wc : null;
+      const incStudy = (obj.study && Array.isArray(obj.study.sessions)) ? obj.study.sessions : [];
       const before = Object.keys(marks).length;
       Object.keys(incMarks).forEach(function(k){ marks[k] = incMarks[k]; });
       Object.keys(incNotes).forEach(function(k){ if (typeof incNotes[k] === "string" && incNotes[k].trim()) notes[k] = incNotes[k]; });
       if (incWc) wc = {weeks: incWc.weeks.slice()};
-      saveMarks(); saveNotes(); saveWc();
+      const seen = {};
+      study.sessions.forEach(function(s){ seen[s.d + "|" + s.i + "|" + (s.o || "open")] = true; });
+      incStudy.forEach(function(s){
+        if (!s || !s.d || !s.i) return;
+        const key = s.d + "|" + s.i + "|" + (s.o || "open");
+        if (!seen[key]){ study.sessions.push({d:String(s.d), i:String(s.i), o:s.o ? String(s.o) : null}); seen[key] = true; }
+      });
+      saveMarks(); saveNotes(); saveWc(); saveStudy();
       renderAll();
-      alert("导入成功：更新 " + Object.keys(incMarks).length + " 条打卡、" + Object.keys(incNotes).length + " 条备注（原有 " + before + " 条已保留）。");
+      alert("导入成功：更新 " + Object.keys(incMarks).length + " 条打卡、" + Object.keys(incNotes).length + " 条备注、在座记录 " + incStudy.length + " 条（原有 " + before + " 条已保留）。");
     } catch(e){
       alert("导入失败：文件格式不正确。");
     }
@@ -694,11 +854,29 @@ function redeem(){
   renderAll();
   alert("兑换成功！本周带上这张券去网吧放松一下吧 🎮");
 }
+function seatIn(){
+  closeStaleSessions();
+  if (openSession()){ alert("已经有一条进行中的到达记录，请先点击“离开考研位”。"); return; }
+  study.sessions.push({d:dateKey(new Date()), i:new Date().toISOString(), o:null});
+  saveStudy();
+  renderAll();
+  alert("已记录到达时间 🚪 开始专心学习吧！");
+}
+function seatOut(){
+  const open = openSession();
+  if (!open){ alert("还没有到达记录，先点“🚪 到达考研位”。"); return; }
+  open.o = new Date().toISOString();
+  saveStudy();
+  renderAll();
+  alert("已记录离开时间 🏠 本次在考研位 " + fmtHM(sessionMinutes(open, new Date())) + "。");
+}
 
 marks = loadMarks();
 loadNotes();
 loadWc();
+loadStudy();
 pruneMarks();
+closeStaleSessions();
 
 $("prevDay").addEventListener("click", function(){
   viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() - 1);
@@ -721,6 +899,8 @@ $("importFile").addEventListener("change", function(){
   this.value = "";
 });
 $("redeemBtn").addEventListener("click", redeem);
+$("seatIn").addEventListener("click", seatIn);
+$("seatOut").addEventListener("click", seatOut);
 
 renderAll();
 setInterval(function(){
@@ -730,13 +910,16 @@ setInterval(function(){
   renderNow(now.getHours() * 60 + now.getMinutes());
 }, 1000);
 setInterval(function(){
-  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
   renderTasks(nowMin);
   renderStats(nowMin);
+  renderSeat();
   renderCourses();
   renderTrend();
+  renderSeatChart();
 }, 15000);
-window.addEventListener("resize", function(){ renderTrend(); });
+window.addEventListener("resize", function(){ renderTrend(); renderSeatChart(); });
 </script>
 </body>
 </html>
