@@ -8,7 +8,7 @@
 :root{
   --bg:#0c0c0e; --panel:#16161a; --panel2:#202026; --line:#2b2b31;
   --text:#e9e9ec; --muted:#9b9ba4; --dim:#5f5f68;
-  --ok:#7fd49a; --no:#e07a7a; --strong:#f2f2f4;
+  --ok:#7fd49a; --no:#e07a7a; --amber:#e8c97a; --strong:#f2f2f4;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -20,7 +20,7 @@ header{display:flex;flex-direction:column;align-items:center;gap:12px;padding-bo
 .clock{text-align:center;width:100%}
 .clock .time{font-size:46px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.15;letter-spacing:2px}
 .clock .date{color:var(--muted);font-size:14px;margin-top:6px;letter-spacing:1px}
-.nav{display:flex;align-items:center;gap:10px;margin:16px 0 6px}
+.nav{display:flex;align-items:center;gap:10px;margin:16px 0 6px;flex-wrap:wrap}
 .nav button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:14px;font-family:inherit}
 .nav button:hover{background:var(--panel2)}
 .nav .cur{color:var(--text);font-weight:600;min-width:150px;text-align:center;font-variant-numeric:tabular-nums}
@@ -37,6 +37,7 @@ header{display:flex;flex-direction:column;align-items:center;gap:12px;padding-bo
 .now-card .big{font-size:16px;line-height:1.7}
 .now-card .sub{color:var(--muted);font-size:13px;margin-top:8px}
 .now-card .sub b{color:var(--text);font-weight:500}
+.now-card .next{color:var(--dim);font-size:12.5px;margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
 h2{font-size:15px;font-weight:600;margin:24px 0 10px;letter-spacing:1px}
 ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
 li.task{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
@@ -52,9 +53,28 @@ li.task.dim{opacity:.55}
 .act button{border-radius:9px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;border:1px solid var(--line);background:var(--panel2);color:var(--text)}
 .act button.done-btn{background:var(--strong);color:#101013;border-color:var(--strong);font-weight:600}
 .act button.no-btn{background:transparent;color:var(--muted)}
-.act button:disabled{opacity:.35;cursor:not-allowed}
 .act button.tiny{background:none;border:none;color:var(--muted);font-size:12px;padding:6px 4px;text-decoration:underline;cursor:pointer}
 .empty{color:var(--muted);font-size:14px;padding:18px 4px;line-height:1.8}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+.cell{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center;cursor:pointer;font-family:inherit;color:var(--text);transition:transform .1s ease}
+.cell:hover{transform:translateY(-1px)}
+.cell .d{color:var(--muted);font-size:11px}
+.cell .c{font-variant-numeric:tabular-nums;margin-top:4px;font-size:12px}
+.cell.full{background:#1c3a25;border-color:#2f5c3b;color:#d7efdd}
+.cell.part{background:#3a3017;border-color:#5c4b1f;color:#f2e2b6}
+.cell.rest{background:#121215;color:var(--dim)}
+.cell.cur{outline:2px solid var(--strong)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin:12px 0 6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+ul.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+li.log-row{display:flex;gap:12px;align-items:baseline;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px}
+.log-time{color:var(--muted);font-variant-numeric:tabular-nums;min-width:120px;font-size:12px}
+.log-txt{flex:1;min-width:0;line-height:1.5}
+.log-ok{color:var(--ok);font-weight:600}
+.log-no{color:var(--no);font-weight:600}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.tools button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 16px;cursor:pointer;font-size:13px;font-family:inherit}
+.tools button:hover{background:var(--panel2)}
 footer{margin-top:30px;color:var(--dim);font-size:12px;text-align:center;line-height:1.8}
 @media (max-width:600px){
   header{align-items:center}
@@ -86,28 +106,49 @@ footer{margin-top:30px;color:var(--dim);font-size:12px;text-align:center;line-he
   <div class="stats">
     <div class="stat"><div class="k">今日完成</div><div class="v" id="stDone">0/0</div><div class="s" id="stTodo"></div><div class="bar"><i id="barDone" style="width:0%"></i></div></div>
     <div class="stat"><div class="k">总进度</div><div class="v" id="stTotal">0/0</div><div class="s" id="stTotalPct"></div></div>
-    <div class="stat"><div class="k">当前日期</div><div class="v" id="stDate">--</div><div class="s" id="stPhase"></div></div>
+    <div class="stat"><div class="k">累计完成</div><div class="v" id="stCum">0</div><div class="s">全部任务打卡次数</div></div>
+    <div class="stat"><div class="k">连续打卡</div><div class="v" id="stStreak">0 天</div><div class="s">每日全部完成</div></div>
   </div>
 
   <div class="now-card" aria-live="polite">
     <span class="tag" id="nowTag">当前</span>
     <div class="big" id="nowText">加载中…</div>
     <div class="sub" id="nowSub"></div>
+    <div class="next" id="nowNext"></div>
   </div>
 
   <h2 id="listTitle">今日任务</h2>
   <ul class="tasks" id="taskList"></ul>
   <div class="empty" id="emptyNote" hidden></div>
 
-  <footer>数据来源：王道408网课学习计划表（2026.08.29–09.28）<br>打卡记录保存在本机浏览器，不会上传。</footer>
+  <h2>打卡日历</h2>
+  <div class="legend">
+    <span><i style="background:var(--ok)"></i>全部完成</span>
+    <span><i style="background:var(--amber)"></i>部分完成</span>
+    <span><i style="background:var(--panel2)"></i>未打卡</span>
+    <span><i style="background:#121215;border:1px solid var(--line)"></i>休息日</span>
+  </div>
+  <div class="grid" id="calGrid"></div>
+
+  <h2>最近打卡记录</h2>
+  <ul class="log" id="logList"></ul>
+  <div class="empty" id="logEmpty" hidden>还没有打卡记录，完成第一个任务后这里会显示。</div>
+
+  <div class="tools">
+    <button type="button" id="exportBtn">导出打卡记录</button>
+    <button type="button" id="importBtn">导入打卡记录</button>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
+  </div>
+
+  <footer>数据来源：王道408网课学习计划表（2026.08.29–09.28）<br>打卡记录仅保存在本浏览器，支持导出/导入备份，不会上传。</footer>
 </div>
 
 <script>
 const SCHEDULE = {"title": "王道408网课学习打卡", "days": [{"date": "2026-08-29", "weekday": "周六", "phase": "计组", "remark": "晚上不安排", "events": [{"start": "09:00", "end": "09:58", "text": "计组 P71 5.4.1_硬布线控制器（57:11）", "type": "video"}, {"start": "10:08", "end": "10:38", "text": "计组 P72 5.4.2_微程序控制器的基本原理（29:29）", "type": "video"}, {"start": "14:00", "end": "14:26", "text": "计组 P73 5.4.3_微指令的设计（25:50）", "type": "video"}, {"start": "14:36", "end": "14:55", "text": "计组 P74 5.4.4_微程序控制单元的设计（18:17）", "type": "video"}, {"start": "15:05", "end": "15:24", "text": "计组 P75 5.6_1_指令流水线的基本概念和性能指标（18:51）", "type": "video"}]}, {"date": "2026-08-30", "weekday": "周日", "phase": "计组", "remark": "白天不安排", "events": [{"start": "19:30", "end": "20:19", "text": "计组 P76 5.6_2_指令流水线的影响因素和分类（48:25）", "type": "video"}, {"start": "20:19", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-08-31", "weekday": "周一", "phase": "计组", "remark": "", "events": [{"start": "09:00", "end": "09:34", "text": "计组 P77 5.6_3_五段式指令流水线（33:09）", "type": "video"}, {"start": "09:44", "end": "10:06", "text": "计组 P78 5.7_1_多处理器系统的基本概念（21:51）", "type": "video"}, {"start": "10:16", "end": "10:24", "text": "计组 P79 5.7_2_硬件多线程（8:00）", "type": "video"}, {"start": "14:00", "end": "14:36", "text": "计组 P80 6.1.1+6.1.3_总线概述（35:57）", "type": "video"}, {"start": "14:46", "end": "15:04", "text": "计组 P81 6.1.5_总线的性能指标（17:51）", "type": "video"}, {"start": "15:14", "end": "15:44", "text": "计组 P82 6.2_总线仲裁（408不考，简单了解即可）（30:00）", "type": "video"}, {"start": "19:30", "end": "19:57", "text": "计组 P83 6.2.1+6.2.3_总线操作和定时（26:01）", "type": "video"}, {"start": "20:07", "end": "20:49", "text": "计组 P84 6.3_总线标准（408不考，简单了解即可）（41:43）", "type": "video"}]}, {"date": "2026-09-01", "weekday": "周二", "phase": "计组", "remark": "", "events": [{"start": "09:00", "end": "09:33", "text": "计组 P85 7.1.1+7.1.2_输入输出系统和IO控制方式（32:33）", "type": "video"}, {"start": "09:43", "end": "10:11", "text": "计组 P86 7.1.3_外部设备（27:34）", "type": "video"}, {"start": "14:00", "end": "14:27", "text": "计组 P87 7.2_IO接口（26:54）", "type": "video"}, {"start": "14:37", "end": "15:02", "text": "计组 P88 7.3.1_程序查询方式（24:18）", "type": "video"}, {"start": "15:12", "end": "15:56", "text": "计组 P89 7.3.2_1_中断的作用和原理（43:43）", "type": "video"}, {"start": "19:30", "end": "19:50", "text": "计组 P90 7.3.2_2_多重中断（19:55）", "type": "video"}, {"start": "20:00", "end": "20:12", "text": "计组 P91 7.3.2_3_程序中断方式（11:40）", "type": "video"}, {"start": "20:22", "end": "20:50", "text": "计组 P92 7.3.3_DMA方式（27:11）", "type": "video"}]}, {"date": "2026-09-02", "weekday": "周三", "phase": "数据结构", "remark": "", "events": [{"start": "09:00", "end": "09:08", "text": "数据结构 P2 1.0_开篇_数据结构在学什么（7:59）", "type": "video"}, {"start": "09:18", "end": "09:33", "text": "自学 数据结构 1.1_数据结构的基本概念（约15分钟）", "type": "read"}, {"start": "09:38", "end": "10:04", "text": "数据结构 P4 1.1_2_数据结构的三要素（旧版）（25:42）", "type": "video"}, {"start": "10:14", "end": "10:29", "text": "自学 数据结构 1.2_1_算法的基本概念（约15分钟）", "type": "read"}, {"start": "14:00", "end": "14:32", "text": "数据结构 P6 1.2_2_算法的时间复杂度（31:08）", "type": "video"}, {"start": "14:42", "end": "14:57", "text": "自学 数据结构 1.2_3_算法的空间复杂度（约15分钟）", "type": "read"}, {"start": "15:02", "end": "15:17", "text": "自学 数据结构 2.1_线性表的定义和基本操作（约15分钟）", "type": "read"}, {"start": "19:30", "end": "19:54", "text": "数据结构 P9 2.2.1_顺序表的定义（23:23）", "type": "video"}, {"start": "20:04", "end": "20:25", "text": "数据结构 P10 2.2.2_1_顺序表的插入删除（20:51）", "type": "video"}, {"start": "20:25", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-09-03", "weekday": "周四", "phase": "数据结构", "remark": "", "events": [{"start": "09:00", "end": "09:13", "text": "数据结构 P11 2.2.2_2_顺序表的查找（12:32）", "type": "video"}, {"start": "09:23", "end": "09:35", "text": "数据结构 P12 2.3.1_单链表的定义（11:59）", "type": "video"}, {"start": "09:45", "end": "10:09", "text": "数据结构 P13 2.3.2_1_单链表的插入删除（23:08）", "type": "video"}, {"start": "10:19", "end": "10:30", "text": "数据结构 P14 2.3.2_2_单链表的查找（10:27）", "type": "video"}, {"start": "14:00", "end": "14:14", "text": "数据结构 P15 2.3.2_3_单链表的建立（13:31）", "type": "video"}, {"start": "14:24", "end": "14:34", "text": "数据结构 P16 2.3.3_双链表（9:18）", "type": "video"}, {"start": "14:44", "end": "14:54", "text": "数据结构 P17 2.3.4_循环链表（9:37）", "type": "video"}, {"start": "15:04", "end": "15:18", "text": "数据结构 P18 2.3.5_静态链表（13:19）", "type": "video"}, {"start": "15:28", "end": "15:43", "text": "数据结构 P19 2.3.6_顺序表和链表的比较（14:35）", "type": "video"}, {"start": "19:30", "end": "19:45", "text": "自学 数据结构 3.1.1_栈的基本概念（约15分钟）", "type": "read"}, {"start": "19:50", "end": "20:03", "text": "数据结构 P21 3.1.2_栈的顺序存储实现（12:39）", "type": "video"}, {"start": "20:13", "end": "20:28", "text": "自学 数据结构 3.1.3_栈的链式存储实现（约15分钟）", "type": "read"}, {"start": "20:33", "end": "20:48", "text": "自学 数据结构 3.2.1_队列的基本概念（约15分钟）", "type": "read"}]}, {"date": "2026-09-04", "weekday": "周五", "phase": "数据结构", "remark": "", "events": [{"start": "09:00", "end": "09:17", "text": "数据结构 P24 3.2.2_队列的顺序实现（16:46）", "type": "video"}, {"start": "09:27", "end": "09:42", "text": "自学 数据结构 3.2.3_队列的链式实现（约15分钟）", "type": "read"}, {"start": "09:47", "end": "10:02", "text": "数据结构 P26 3.2.4_双端队列（14:54）", "type": "video"}, {"start": "10:12", "end": "10:24", "text": "数据结构 P27 3.3.1_栈在括号匹配中的应用（11:48）", "type": "video"}, {"start": "10:34", "end": "11:06", "text": "数据结构 P28 3.3.2_1_栈在表达式求值中的应用(上)（31:41）", "type": "video"}, {"start": "14:00", "end": "14:21", "text": "数据结构 P29 3.3.2_2_栈在表达式求值中的应用(下)（20:33）", "type": "video"}, {"start": "14:31", "end": "14:45", "text": "数据结构 P30 3.3.3_栈在递归中的应用（13:01）", "type": "video"}, {"start": "14:55", "end": "15:04", "text": "数据结构 P31 3.3.4+3.3.5_队列的应用（8:24）", "type": "video"}, {"start": "15:14", "end": "15:42", "text": "数据结构 P32 3.4.1-3.4.4_特殊矩阵的压缩存储（27:41）", "type": "video"}, {"start": "19:30", "end": "19:45", "text": "自学 数据结构 4.1_1_串的定义和基本操作（约15分钟）", "type": "read"}, {"start": "19:50", "end": "20:05", "text": "自学 数据结构 4.1_2_串的存储结构（约15分钟）", "type": "read"}, {"start": "20:10", "end": "20:27", "text": "数据结构 P35 4.2_1_朴素模式匹配算法（16:33）", "type": "video"}, {"start": "20:27", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-09-05", "weekday": "周六", "phase": "总复习", "remark": "09.05全天休息；缓冲复习", "events": []}, {"date": "2026-09-06", "weekday": "周日", "phase": "数据结构", "remark": "", "events": [{"start": "09:00", "end": "09:17", "text": "数据结构 P36 4.2_2_KMP算法(旧版上)（16:32）", "type": "video"}, {"start": "09:27", "end": "09:45", "text": "数据结构 P37 4.2_3_KMP算法(旧版下)（17:32）", "type": "video"}, {"start": "09:55", "end": "10:20", "text": "数据结构 P38 4.2.2_1_KMP算法（新版）（24:56）", "type": "video"}, {"start": "14:00", "end": "14:18", "text": "数据结构 P39 4.2.2_2_求next数组（17:12）", "type": "video"}, {"start": "14:28", "end": "14:49", "text": "数据结构 P40 4.2.3_KMP算法的进一步优化（20:42）", "type": "video"}, {"start": "14:59", "end": "15:15", "text": "数据结构 P41 5.1.1+5.1.2_树的定义和基本术语（15:17）", "type": "video"}, {"start": "15:25", "end": "15:40", "text": "自学 数据结构 5.1.3 树的性质（约15分钟）", "type": "read"}, {"start": "19:30", "end": "19:43", "text": "数据结构 P43 5.2.1_1_二叉树的定义和基本术语（12:46）", "type": "video"}, {"start": "19:53", "end": "20:08", "text": "自学 数据结构 5.2.1_2_二叉树的性质（约15分钟）", "type": "read"}, {"start": "20:13", "end": "20:24", "text": "数据结构 P45 5.2.2_二叉树的存储结构（10:45）", "type": "video"}, {"start": "20:34", "end": "20:58", "text": "数据结构 P46 5.3.1_1_二叉树的先中后序遍历（23:08）", "type": "video"}]}, {"date": "2026-09-07", "weekday": "周一", "phase": "数据结构", "remark": "", "events": [{"start": "09:00", "end": "09:15", "text": "自学 数据结构 5.3.1_2_二叉树的层次遍历（约15分钟）", "type": "read"}, {"start": "09:20", "end": "09:32", "text": "数据结构 P48 5.3_3_由遍历序列构造二叉树（11:53）", "type": "video"}, {"start": "09:42", "end": "10:00", "text": "数据结构 P49 5.3.2_1_线索二叉树的概念（17:16）", "type": "video"}, {"start": "10:10", "end": "10:30", "text": "数据结构 P50 5.3.2_2_二叉树的线索化（19:25）", "type": "video"}, {"start": "14:00", "end": "14:19", "text": "数据结构 P51 5.3.2_3_在线索二叉树中找前驱后继（18:19）", "type": "video"}, {"start": "14:29", "end": "14:49", "text": "数据结构 P52 5.4.1 树的存储结构（19:29）", "type": "video"}, {"start": "14:59", "end": "15:14", "text": "数据结构 P53 5.4.2 树、森林与二叉树的转换（14:51）", "type": "video"}, {"start": "15:24", "end": "15:36", "text": "数据结构 P54 5.4.3 树和森林的遍历（11:09）", "type": "video"}, {"start": "19:30", "end": "19:48", "text": "数据结构 P55 5.5.1_哈夫曼树（17:38）", "type": "video"}, {"start": "19:58", "end": "20:31", "text": "数据结构 P56 5.5.2_1_并查集（32:13）", "type": "video"}, {"start": "20:31", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-09-08", "weekday": "周二", "phase": "数据结构", "remark": "", "events": [{"start": "09:00", "end": "09:11", "text": "数据结构 P57 5.5.2_2_并查集的进一步优化（10:17）", "type": "video"}, {"start": "09:21", "end": "09:52", "text": "数据结构 P58 6.1.1_图的基本概念（30:39）", "type": "video"}, {"start": "10:02", "end": "10:18", "text": "数据结构 P59 6.2.1_邻接矩阵法（15:38）", "type": "video"}, {"start": "10:28", "end": "10:35", "text": "数据结构 P60 6.2.2_邻接表法（6:53）", "type": "video"}, {"start": "14:00", "end": "14:15", "text": "自学 数据结构 6.2.3+6.2.4_十字链表、邻接多重表（约15分钟）", "type": "read"}, {"start": "14:20", "end": "14:34", "text": "数据结构 P62 6.2.5_图的基本操作（13:46）", "type": "video"}, {"start": "14:44", "end": "15:10", "text": "数据结构 P63 6.3.1_图的广度优先遍历（25:11）", "type": "video"}, {"start": "15:20", "end": "15:40", "text": "数据结构 P64 6.3.2_图的深度优先遍历（19:22）", "type": "video"}, {"start": "19:30", "end": "19:51", "text": "数据结构 P65 6.4.1_最小生成树（20:43）", "type": "video"}, {"start": "20:01", "end": "20:11", "text": "数据结构 P66 6.4.2_1最短路径问题_BFS算法（10:00）", "type": "video"}, {"start": "20:21", "end": "20:40", "text": "数据结构 P67 6.4.2_2最短路径问题_Dijkstra算法（18:47）", "type": "video"}]}, {"date": "2026-09-09", "weekday": "周三", "phase": "数据结构", "remark": "", "events": [{"start": "09:00", "end": "09:23", "text": "数据结构 P68 6.4.2_3_最短路径问题_Floyd算法（22:48）", "type": "video"}, {"start": "09:33", "end": "09:48", "text": "自学 数据结构 6.4.3_有向无环图描述表达式（约15分钟）", "type": "read"}, {"start": "09:53", "end": "10:14", "text": "数据结构 P70 6.4.4_拓扑排序（20:28）", "type": "video"}, {"start": "10:24", "end": "10:49", "text": "数据结构 P71 6.4.5_关键路径（24:39）", "type": "video"}, {"start": "14:00", "end": "14:15", "text": "自学 数据结构 7.1_查找的基本概念（约15分钟）", "type": "read"}, {"start": "14:20", "end": "14:35", "text": "数据结构 P73 7.2.1_顺序查找（14:50）", "type": "video"}, {"start": "14:45", "end": "15:09", "text": "数据结构 P74 7.2.2_折半查找（23:46）", "type": "video"}, {"start": "15:19", "end": "15:43", "text": "数据结构 P75 7.2.3_分块查找（23:37）", "type": "video"}, {"start": "19:30", "end": "19:49", "text": "数据结构 P76 7.3.1 二叉排序树（18:43）", "type": "video"}, {"start": "19:59", "end": "20:32", "text": "数据结构 P77 7.3.2_1 平衡二叉树（32:28）", "type": "video"}, {"start": "20:32", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-09-10", "weekday": "周四", "phase": "数据结构", "remark": "", "events": [{"start": "09:00", "end": "09:31", "text": "数据结构 P78 7.3.2_2_平衡二叉树的删除（30:36）", "type": "video"}, {"start": "09:41", "end": "10:07", "text": "数据结构 P79 7.3.3_1_红黑树的定义和性质（25:42）", "type": "video"}, {"start": "10:17", "end": "10:54", "text": "数据结构 P80 7.3.3_2_红黑树的插入（36:21）", "type": "video"}, {"start": "14:00", "end": "14:05", "text": "数据结构 P81 7.3.3_3_红黑树的删除（4:46）", "type": "video"}, {"start": "14:15", "end": "14:44", "text": "数据结构 P82 7.4.1_1_B树（28:49）", "type": "video"}, {"start": "14:54", "end": "15:15", "text": "数据结构 P83 7.4.1_2_B树的插入删除（20:07）", "type": "video"}, {"start": "15:25", "end": "15:47", "text": "数据结构 P84 7.4.2_B+树（21:25）", "type": "video"}, {"start": "19:30", "end": "19:40", "text": "数据结构 P85 7.5.1 散列表的基本概念（9:39）", "type": "video"}, {"start": "19:50", "end": "20:06", "text": "数据结构 P86 7.5.2 散列函数的构造（15:13）", "type": "video"}, {"start": "20:16", "end": "20:26", "text": "数据结构 P87 7.5.3_1 处理冲突的方法_拉链法（9:56）", "type": "video"}]}, {"date": "2026-09-11", "weekday": "周五", "phase": "数据结构", "remark": "", "events": [{"start": "09:00", "end": "09:27", "text": "数据结构 P88 7.5.3_2 处理冲突的方法_开放定址法（26:09）", "type": "video"}, {"start": "09:37", "end": "10:08", "text": "数据结构 P89 7.5.4 散列查找的性能分析（30:50）", "type": "video"}, {"start": "10:18", "end": "10:33", "text": "自学 数据结构 8.1_排序的基本概念（约15分钟）", "type": "read"}, {"start": "14:00", "end": "14:21", "text": "数据结构 P91 8.2.1+8.2.2_插入排序（20:16）", "type": "video"}, {"start": "14:31", "end": "14:53", "text": "数据结构 P92 8.2.3_希尔排序（21:36）", "type": "video"}, {"start": "15:03", "end": "15:17", "text": "数据结构 P93 8.3.1_冒泡排序（13:01）", "type": "video"}, {"start": "15:27", "end": "16:05", "text": "数据结构 P94 8.3.2_快速排序（37:09）", "type": "video"}, {"start": "19:30", "end": "19:45", "text": "自学 数据结构 8.4.1_简单选择排序（约15分钟）", "type": "read"}, {"start": "19:50", "end": "20:23", "text": "数据结构 P96 8.4.2_1_堆排序（32:49）", "type": "video"}, {"start": "20:23", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-09-12", "weekday": "周六", "phase": "数据结构→计网", "remark": "", "events": [{"start": "09:00", "end": "09:08", "text": "数据结构 P97 8.4.2_2_堆的插入删除（7:05）", "type": "video"}, {"start": "09:18", "end": "09:41", "text": "数据结构 P98 8.5.1_归并排序（22:26）", "type": "video"}, {"start": "09:51", "end": "10:17", "text": "数据结构 P99 8.5.2_基数排序（25:36）", "type": "video"}, {"start": "10:27", "end": "10:52", "text": "自学 数据结构 8.5.3 计数排序（约25分钟）", "type": "read"}, {"start": "14:00", "end": "14:31", "text": "数据结构 P101 8.7.1+8.7.2_外部排序（30:22）", "type": "video"}, {"start": "14:41", "end": "14:59", "text": "数据结构 P102 8.7.3_败者树（17:40）", "type": "video"}, {"start": "15:09", "end": "15:20", "text": "数据结构 P103 8.7.4_置换-选择排序（10:33）", "type": "video"}, {"start": "19:30", "end": "19:50", "text": "数据结构 P104 8.7.5_最佳归并树（19:18）", "type": "video"}, {"start": "20:00", "end": "20:15", "text": "自学 计网 1.0_开篇_欢迎来到计算机网络的世界（约15分钟）", "type": "read"}, {"start": "20:20", "end": "20:35", "text": "自学 计网 1.1_1 计算机网络的概念（约15分钟）", "type": "read"}, {"start": "20:35", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-09-13", "weekday": "周日", "phase": "计网", "remark": "", "events": [{"start": "09:00", "end": "09:15", "text": "自学 计网 1.1_2 计算机网络的组成和功能（约15分钟）", "type": "read"}, {"start": "09:20", "end": "09:55", "text": "计网 P4 1.1_3_1 电路交换、报文交换、分组交换（34:04）", "type": "video"}, {"start": "10:05", "end": "10:24", "text": "计网 P5 1.1_3_2 三种交换方式的性能分析（18:16）", "type": "video"}, {"start": "14:00", "end": "14:15", "text": "自学 计网 1.1_4 计算机网络的分类（约15分钟）", "type": "read"}, {"start": "14:20", "end": "14:35", "text": "自学 计网 1.1_5_1 计算机网络的性能指标(上)（约15分钟）", "type": "read"}, {"start": "14:40", "end": "15:15", "text": "计网 P8 1.1_5_2 计算机网络的性能指标(下)（34:37）", "type": "video"}, {"start": "19:30", "end": "19:52", "text": "计网 P9 1.2.1 计算机网络分层结构（上）（21:30）", "type": "video"}, {"start": "20:02", "end": "20:23", "text": "计网 P10 1.2.2 计算机网络分层结构（下）（20:51）", "type": "video"}, {"start": "20:33", "end": "20:59", "text": "计网 P11 1.2.3_1 OSI参考模型（25:38）", "type": "video"}]}, {"date": "2026-09-14", "weekday": "周一", "phase": "计网", "remark": "", "events": [{"start": "09:00", "end": "09:25", "text": "计网 P12 1.2.3_2 TCP IP模型（24:47）", "type": "video"}, {"start": "09:35", "end": "09:55", "text": "计网 P13 2.1.1 通信基础的基本概念（19:07）", "type": "video"}, {"start": "10:05", "end": "10:26", "text": "计网 P14 2.1.2 信道的极限容量（20:39）", "type": "video"}, {"start": "14:00", "end": "14:25", "text": "计网 P15 2.1.3_1 编码和调制（上）（24:24）", "type": "video"}, {"start": "14:35", "end": "14:51", "text": "计网 P16 2.1.3_2 编码和调制（下）（15:19）", "type": "video"}, {"start": "15:01", "end": "15:21", "text": "自学 计网 2.2 传输介质（约20分钟）", "type": "read"}, {"start": "19:30", "end": "19:45", "text": "自学 计网 2.3 物理层设备（约15分钟）", "type": "read"}, {"start": "19:50", "end": "20:05", "text": "自学 计网 3.1 数据链路层的功能（约15分钟）", "type": "read"}, {"start": "20:10", "end": "20:30", "text": "计网 P20 3.2 组帧（19:04）", "type": "video"}, {"start": "20:30", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-09-15", "weekday": "周二", "phase": "计网", "remark": "", "events": [{"start": "09:00", "end": "09:13", "text": "计网 P21 3.3.1_1 检错编码（奇偶校验码）（12:58）", "type": "video"}, {"start": "09:23", "end": "09:45", "text": "计网 P22 3.3.1_2 检错编码（循环冗余校验码）（21:03）", "type": "video"}, {"start": "09:55", "end": "10:14", "text": "计网 P23 3.3.2 纠错编码（海明校验码）（18:20）", "type": "video"}, {"start": "10:24", "end": "10:33", "text": "计网 P24 3.4_1 流量控制、可靠传输与滑动窗口机制（8:33）", "type": "video"}, {"start": "14:00", "end": "14:18", "text": "计网 P25 3.4_2 停止等待协议（17:07）", "type": "video"}, {"start": "14:28", "end": "14:48", "text": "计网 P26 3.4_3 后退N帧协议（GBN）（19:54）", "type": "video"}, {"start": "14:58", "end": "15:18", "text": "计网 P27 3.4_4 选择重传协议（SR）（19:14）", "type": "video"}, {"start": "15:28", "end": "16:00", "text": "计网 P28 3.4_5 三种协议的信道利用率分析（31:40）", "type": "video"}, {"start": "19:30", "end": "19:49", "text": "计网 P29 3.5.1_1 信道划分介质访问控制（上）（18:38）", "type": "video"}, {"start": "19:59", "end": "20:17", "text": "计网 P30 3.5.1_2 信道划分介质访问控制（下）（17:16）", "type": "video"}, {"start": "20:27", "end": "20:58", "text": "计网 P31 3.5.2_1 随机访问介质访问控制（30:16）", "type": "video"}]}, {"date": "2026-09-16", "weekday": "周三", "phase": "计网", "remark": "", "events": [{"start": "09:00", "end": "09:18", "text": "计网 P32 3.5.2_2 CSMA CD协议（上）（17:24）", "type": "video"}, {"start": "09:28", "end": "09:54", "text": "计网 P33 3.5.2_3 CSMA CD协议（下）（25:07）", "type": "video"}, {"start": "10:04", "end": "10:43", "text": "计网 P34 3.5.2_4 CSMA CA协议（38:05）", "type": "video"}, {"start": "14:00", "end": "14:18", "text": "计网 P35 3.5.3 令牌传递协议（17:47）", "type": "video"}, {"start": "14:28", "end": "14:43", "text": "自学 计网 3.6.0 局域网与IEEE 802（约15分钟）", "type": "read"}, {"start": "14:48", "end": "15:24", "text": "计网 P37 3.6.1 局域网的基本概念和体系结构（35:03）", "type": "video"}, {"start": "19:30", "end": "20:08", "text": "计网 P38 3.6.2 以太网与IEEE 802.3（37:20）", "type": "video"}, {"start": "20:18", "end": "20:39", "text": "计网 P39 3.6.3 VLAN的基本概念与基本原理（20:26）", "type": "video"}]}, {"date": "2026-09-17", "weekday": "周四", "phase": "计网", "remark": "", "events": [{"start": "09:00", "end": "09:20", "text": "自学 计网 3.6.4 IEEE 802.11 无线局域网（约20分钟）", "type": "read"}, {"start": "09:25", "end": "09:40", "text": "自学 计网 3.7.1 广域网的基本概念（约15分钟）", "type": "read"}, {"start": "09:45", "end": "10:00", "text": "自学 计网 3.7.2_1 PPP协议（约15分钟）", "type": "read"}, {"start": "10:05", "end": "10:20", "text": "自学 计网 3.7.2_2 PPP协议的工作过程（约15分钟）", "type": "read"}, {"start": "14:00", "end": "14:29", "text": "计网 P44 3.8 以太网交换机（28:55）", "type": "video"}, {"start": "14:39", "end": "14:56", "text": "计网 P45 4.1 网络层的功能（16:47）", "type": "video"}, {"start": "15:06", "end": "15:40", "text": "计网 P46 4.2.1 IPv4分组（33:41）", "type": "video"}, {"start": "19:30", "end": "20:11", "text": "计网 P47 4.2.2 IP地址+ 整章串讲（40:40）", "type": "video"}, {"start": "20:21", "end": "21:00", "text": "计网 P48 4.2.3 子网划分与和子网掩码（38:26）", "type": "video"}]}, {"date": "2026-09-18", "weekday": "周五", "phase": "计网", "remark": "", "events": [{"start": "09:00", "end": "09:34", "text": "计网 P49 4.2.4 无分类编址 CIDR（33:23）", "type": "video"}, {"start": "09:44", "end": "10:15", "text": "计网 P50 4.2.5 路由聚合（30:53）", "type": "video"}, {"start": "14:00", "end": "14:37", "text": "计网 P51 4.2.6 网络地址转换 NAT（36:29）", "type": "video"}, {"start": "14:47", "end": "15:08", "text": "计网 P52 4.2.7 地址解析协议ARP（20:51）", "type": "video"}, {"start": "15:18", "end": "15:49", "text": "计网 P53 4.2.8 动态主机配置协议DHCP（30:57）", "type": "video"}, {"start": "19:30", "end": "20:04", "text": "计网 P54 4.2.9_1 ICMP网际控制报文协议（33:53）", "type": "video"}, {"start": "20:14", "end": "20:29", "text": "自学 计网 4.2.9_2 （选学）traceroute的实现原理（约15分钟）", "type": "read"}, {"start": "20:29", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-09-19", "weekday": "周六", "phase": "计网", "remark": "", "events": [{"start": "09:00", "end": "09:37", "text": "计网 P56 4.3_1 IPv6地址（36:08）", "type": "video"}, {"start": "09:47", "end": "10:14", "text": "计网 P57 4.4.1 路由算法（26:50）", "type": "video"}, {"start": "14:00", "end": "14:12", "text": "计网 P58 4.4.2 分层次的路由协议（11:15）", "type": "video"}, {"start": "14:22", "end": "14:38", "text": "计网 P59 4.4.3_1 RIP的基本概念（15:58）", "type": "video"}, {"start": "14:48", "end": "15:11", "text": "计网 P60 4.4.3_2 RIP的工作示例（从路由器启动到收敛）（22:27）", "type": "video"}, {"start": "15:21", "end": "15:30", "text": "计网 P61 4.4.3_3 RIP的工作示例（动态适应网络拓扑变化）（8:56）", "type": "video"}, {"start": "19:30", "end": "19:48", "text": "计网 P62 4.4.3_4 RIP的工作示例（反映RIP的缺点）（17:10）", "type": "video"}, {"start": "19:58", "end": "20:06", "text": "计网 P63 4.4.3_5 RIP的工作示例（反映RIP的优点）（7:17）", "type": "video"}, {"start": "20:16", "end": "20:45", "text": "计网 P64 4.4.4_1 OSPF的特点（28:07）", "type": "video"}]}, {"date": "2026-09-20", "weekday": "周日", "phase": "计网", "remark": "", "events": [{"start": "09:00", "end": "09:26", "text": "计网 P65 4.4.4_2 OSPF的基本工作原理（25:33）", "type": "video"}, {"start": "09:36", "end": "10:01", "text": "计网 P66 4.4.4_3 OSPF的分组类型（24:08）", "type": "video"}, {"start": "10:11", "end": "10:31", "text": "计网 P67 4.4.5_1 BGP的特点、相关概念（19:05）", "type": "video"}, {"start": "14:00", "end": "14:19", "text": "计网 P68 4.4.5_2 BGP路由信息&工作原理（18:51）", "type": "video"}, {"start": "14:29", "end": "14:45", "text": "计网 P69 4.4.5_3 BGP路由选择（15:44）", "type": "video"}, {"start": "14:55", "end": "15:01", "text": "计网 P70 4.4.5_4 BGP四种报文（5:02）", "type": "video"}, {"start": "15:11", "end": "15:26", "text": "自学 计网 4.5 IP多播（约15分钟）", "type": "read"}, {"start": "15:31", "end": "15:51", "text": "自学 计网 4.6 移动IP（约20分钟）", "type": "read"}, {"start": "19:30", "end": "19:51", "text": "计网 P73 4.7 网络层设备（20:28）", "type": "video"}, {"start": "20:01", "end": "20:32", "text": "计网 P74 5.1 传输层提供的服务（30:21）", "type": "video"}, {"start": "20:32", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-09-21", "weekday": "周一", "phase": "计网", "remark": "", "events": [{"start": "09:00", "end": "09:20", "text": "计网 P75 5.2.1 UDP数据报（19:59）", "type": "video"}, {"start": "09:30", "end": "09:46", "text": "计网 P76 5.2.2 UDP检验（15:51）", "type": "video"}, {"start": "09:56", "end": "10:11", "text": "计网 P77 5.3.1 TCP协议的框架梳理（14:46）", "type": "video"}, {"start": "10:21", "end": "10:57", "text": "计网 P78 5.3.2 TCP报文段（35:08）", "type": "video"}, {"start": "14:00", "end": "14:23", "text": "计网 P79 5.3.3_1 TCP连接管理（建立连接）（22:20）", "type": "video"}, {"start": "14:33", "end": "14:55", "text": "计网 P80 5.3.3_2 TCP连接管理（释放连接）（21:29）", "type": "video"}, {"start": "15:05", "end": "15:32", "text": "计网 P81 5.3.4+5_1 TCP可靠传输、流量控制（26:06）", "type": "video"}, {"start": "19:30", "end": "20:06", "text": "计网 P82 5.3.4+5_2 TCP可靠传输、流量控制（35:03）", "type": "video"}, {"start": "20:16", "end": "20:30", "text": "计网 P83 5.3.4+5_3 TCP可靠传输、流量控制（13:42）", "type": "video"}, {"start": "20:30", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-09-22", "weekday": "周二", "phase": "计网", "remark": "", "events": [{"start": "09:00", "end": "09:04", "text": "计网 P84 5.3.5 （必看）快重传机制的易错点（3:36）", "type": "video"}, {"start": "09:14", "end": "09:56", "text": "计网 P85 5.3.6_1 TCP拥塞控制（慢开始和拥塞避免）（41:10）", "type": "video"}, {"start": "10:06", "end": "10:13", "text": "计网 P86 5.3.6_2 TCP拥塞控制(快重传和快恢复)（6:30）", "type": "video"}, {"start": "10:23", "end": "10:38", "text": "自学 计网 6.1 网络应用模型（约15分钟）", "type": "read"}, {"start": "14:00", "end": "14:16", "text": "计网 P88 6.2_1 DNS概述（15:46）", "type": "video"}, {"start": "14:26", "end": "14:45", "text": "计网 P89 6.2_2 DNS层次域名空间（18:05）", "type": "video"}, {"start": "14:55", "end": "15:32", "text": "计网 P90 6.2_3 DNS 域名服务器、域名解析过程（36:20）", "type": "video"}, {"start": "19:30", "end": "19:55", "text": "自学 计网 6.3 FTP 文件传输协议（约25分钟）", "type": "read"}, {"start": "20:00", "end": "20:25", "text": "自学 计网 6.4 电子邮件（约25分钟）", "type": "read"}, {"start": "20:25", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-09-23", "weekday": "周三", "phase": "计网", "remark": "", "events": [{"start": "09:00", "end": "09:35", "text": "计网 P93 6.5.1 万维网WWW（34:13）", "type": "video"}, {"start": "09:45", "end": "10:08", "text": "计网 P94 6.5.2 超文本传输协议HTTP（22:04）", "type": "video"}, {"start": "14:00", "end": "15:30", "text": "王道真题分章练习", "type": "review"}, {"start": "19:30", "end": "21:00", "text": "当日章节课后题＋复习（王道对应章节选择题）", "type": "exercise"}]}, {"date": "2026-09-24", "weekday": "周四", "phase": "总复习", "remark": "", "events": [{"start": "09:00", "end": "10:30", "text": "真题模拟＋错题复盘", "type": "review"}, {"start": "14:00", "end": "15:30", "text": "王道真题分章练习", "type": "review"}, {"start": "19:30", "end": "21:00", "text": "错题本＋薄弱点回看", "type": "review"}]}, {"date": "2026-09-25", "weekday": "周五", "phase": "总复习", "remark": "", "events": [{"start": "09:00", "end": "10:30", "text": "真题模拟＋错题复盘", "type": "review"}, {"start": "14:00", "end": "15:30", "text": "王道真题分章练习", "type": "review"}, {"start": "19:30", "end": "21:00", "text": "错题本＋薄弱点回看", "type": "review"}]}, {"date": "2026-09-26", "weekday": "周六", "phase": "总复习", "remark": "", "events": [{"start": "09:00", "end": "10:30", "text": "真题模拟＋错题复盘", "type": "review"}, {"start": "14:00", "end": "15:30", "text": "王道真题分章练习", "type": "review"}, {"start": "19:30", "end": "21:00", "text": "错题本＋薄弱点回看", "type": "review"}]}, {"date": "2026-09-27", "weekday": "周日", "phase": "总复习", "remark": "", "events": [{"start": "09:00", "end": "10:30", "text": "真题模拟＋错题复盘", "type": "review"}, {"start": "14:00", "end": "15:30", "text": "王道真题分章练习", "type": "review"}, {"start": "19:30", "end": "21:00", "text": "错题本＋薄弱点回看", "type": "review"}]}, {"date": "2026-09-28", "weekday": "周一", "phase": "总复习", "remark": "", "events": [{"start": "09:00", "end": "10:30", "text": "真题模拟＋错题复盘", "type": "review"}, {"start": "14:00", "end": "15:30", "text": "王道真题分章练习", "type": "review"}, {"start": "19:30", "end": "21:00", "text": "错题本＋薄弱点回看", "type": "review"}]}]};
 
 const WEEK = ["周日","周一","周二","周三","周四","周五","周六"];
-const STORE_KEY = "wd408_check_v1";
-const ZERO = new Date(2026, 7, 29); // 计划起始 2026-08-29
+const STORE_KEY = "wd408_check_v2";
+const LEGACY_KEY = "wd408_check_v1";
 
 function pad2(n){ return String(n).padStart(2,"0"); }
 function dateKey(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
@@ -115,31 +156,57 @@ function parseKey(k){ const p=k.split("-"); return new Date(+p[0], +p[1]-1, +p[2
 function toMin(t){ const p=t.split(":").map(Number); return p[0]*60+p[1]; }
 function fmtClock(d){ return pad2(d.getHours())+":"+pad2(d.getMinutes())+":"+pad2(d.getSeconds()); }
 function fmtDateCn(d){ return d.getFullYear()+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日 "+WEEK[d.getDay()]; }
-
-let marks = {};
-try { marks = JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch(e) { marks = {}; }
-function saveMarks(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(marks)); } catch(e){} }
 function evId(date, i){ return date+"-"+i; }
 
-function getDay(dateStr){
-  return SCHEDULE.days.find(function(d){ return d.date === dateStr; }) || null;
+let marks = {};
+function normalize(obj){
+  const out = {};
+  Object.keys(obj || {}).forEach(function(k){
+    const v = obj[k];
+    if (v === "done" || v === "no") out[k] = {s:v, t:null};
+    else if (v && typeof v === "object" && (v.s === "done" || v.s === "no")) out[k] = {s:v.s, t:v.t || null};
+  });
+  return out;
 }
-function dayEvents(dateStr){
-  const day = getDay(dateStr);
-  return day ? day.events : [];
+function loadMarks(){
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) { const obj = JSON.parse(raw); return normalize(obj.marks || obj); }
+  } catch(e){}
+  try {
+    const old = JSON.parse(localStorage.getItem(LEGACY_KEY) || "{}");
+    const out = normalize(old);
+    if (Object.keys(out).length) {
+      localStorage.setItem(STORE_KEY, JSON.stringify({version:2, marks:out}));
+      return out;
+    }
+  } catch(e){}
+  return {};
 }
+function saveMarks(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({version:2, marks:marks})); } catch(e){}
+}
+function pruneMarks(){
+  const valid = {};
+  SCHEDULE.days.forEach(function(day){
+    day.events.forEach(function(_, i){ valid[evId(day.date, i)] = true; });
+  });
+  Object.keys(marks).forEach(function(k){ if (!valid[k]) delete marks[k]; });
+}
+
+function getDay(dateStr){ return SCHEDULE.days.find(function(d){ return d.date === dateStr; }) || null; }
+function dayEvents(dateStr){ const day = getDay(dateStr); return day ? day.events : []; }
 function statusOf(ev, dateStr, nowMin){
   const id = evId(dateStr, dayEvents(dateStr).indexOf(ev));
-  if (marks[id] === "done") return "done";
-  if (marks[id] === "no") return "no";
+  const mk = marks[id];
+  if (mk) return mk.s;
   const s = toMin(ev.start), e = toMin(ev.end);
   if (nowMin < s) return "pending";
   if (nowMin < e) return "doing";
   return "todo";
 }
-
 function phaseOf(text){
-  if (text.indexOf("计组") === 0 || text.indexOf("计组 ") === 0) return "计组";
+  if (text.indexOf("计组") === 0) return "计组";
   if (text.indexOf("数据结构") === 0) return "数据结构";
   if (text.indexOf("计网") === 0) return "计网";
   if (text.indexOf("自学") === 0) return "自学";
@@ -147,9 +214,22 @@ function phaseOf(text){
   if (text.indexOf("真题") >= 0 || text.indexOf("错题") >= 0) return "复习";
   return "安排";
 }
-
-function statusText(s){
-  return {pending:"未开始", doing:"进行中", todo:"待打卡", done:"已完成", no:"未完成"}[s];
+function statusText(s){ return {pending:"未开始", doing:"进行中", todo:"待打卡", done:"已完成", no:"未完成"}[s]; }
+function dayComplete(dateStr){
+  const evs = dayEvents(dateStr);
+  if (!evs.length) return false;
+  return evs.every(function(ev){ return marks[evId(dateStr, evs.indexOf(ev))] && marks[evId(dateStr, evs.indexOf(ev))].s === "done"; });
+}
+function dayDoneCount(dateStr){
+  const evs = dayEvents(dateStr);
+  return evs.filter(function(ev){ const m = marks[evId(dateStr, evs.indexOf(ev))]; return m && m.s === "done"; }).length;
+}
+function streakDays(){
+  let streak = 0;
+  let d = new Date();
+  if (!dayComplete(dateKey(d))) d.setDate(d.getDate() - 1);
+  while (dayComplete(dateKey(d))) { streak++; d.setDate(d.getDate() - 1); }
+  return streak;
 }
 
 let viewDate = new Date();
@@ -159,44 +239,41 @@ function renderNow(nowMin){
   const dateStr = dateKey(viewDate);
   const evs = dayEvents(dateStr);
   const day = getDay(dateStr);
-  const tag = $("nowTag"), big = $("nowText"), sub = $("nowSub");
+  const tag = $("nowTag"), big = $("nowText"), sub = $("nowSub"), next = $("nowNext");
   const doing = evs.find(function(ev){ return statusOf(ev, dateStr, nowMin) === "doing"; });
-  const next = evs.find(function(ev){ return statusOf(ev, dateStr, nowMin) === "pending"; });
+  const nxt = evs.find(function(ev){ return statusOf(ev, dateStr, nowMin) === "pending"; });
   const todo = evs.filter(function(ev){ return statusOf(ev, dateStr, nowMin) === "todo"; });
   if (doing){
     tag.textContent = "正在进行";
     big.textContent = doing.text;
-    sub.innerHTML = phaseOf(doing.text) + " · " + doing.start + "–" + doing.end + " · 还剩约 <b>" + Math.ceil((toMin(doing.end) - nowMin)) + "</b> 分钟";
-    return;
-  }
-  if (next){
+    sub.innerHTML = phaseOf(doing.text) + " · " + doing.start + "–" + doing.end + " · 还剩约 <b>" + (toMin(doing.end) - nowMin) + "</b> 分钟";
+  } else if (nxt){
     tag.textContent = "接下来";
-    big.textContent = next.text;
-    sub.innerHTML = phaseOf(next.text) + " · " + next.start + "–" + next.end + " · <b>" + next.start + "</b> 开始";
-    return;
-  }
-  if (todo.length){
+    big.textContent = nxt.text;
+    sub.innerHTML = phaseOf(nxt.text) + " · " + nxt.start + "–" + nxt.end + " · <b>" + nxt.start + "</b> 开始";
+  } else if (todo.length){
     tag.textContent = "待打卡";
     big.textContent = "有 " + todo.length + " 项安排已结束，请确认是否完成";
     sub.textContent = todo[0].start + "–" + todo[0].end + " " + todo[0].text;
-    return;
-  }
-  if (!day){
+  } else if (!day){
     tag.textContent = "计划外";
     big.textContent = "这一天不在计划范围内";
     sub.textContent = "计划期间：2026.08.29 – 2026.09.28";
-    return;
-  }
-  if (!evs.length){
+  } else if (!evs.length){
     tag.textContent = day.remark || "休息";
     big.textContent = "今天没有安排" + (day.remark ? "（" + day.remark + "）" : "");
     sub.textContent = "好好休息，明天继续";
-    return;
+  } else {
+    const doneCnt = dayDoneCount(dateStr);
+    tag.textContent = doneCnt === evs.length ? "全部完成" : "今日结束";
+    big.textContent = doneCnt === evs.length ? "今天的任务已全部完成，太棒了 🎉" : "今天的安排已全部结束";
+    sub.textContent = "完成 " + doneCnt + " / " + evs.length + " 项";
   }
-  const doneCnt = evs.filter(function(ev){ return marks[evId(dateStr, evs.indexOf(ev))] === "done"; }).length;
-  tag.textContent = doneCnt === evs.length ? "全部完成" : "今日结束";
-  big.textContent = doneCnt === evs.length ? "今天的任务已全部完成，太棒了 🎉" : "今天的安排已全部结束";
-  sub.textContent = "完成 " + doneCnt + " / " + evs.length + " 项";
+  const tom = new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() + 1);
+  const tomEvs = dayEvents(dateKey(tom));
+  next.textContent = tomEvs.length
+    ? "明日预告：" + tomEvs[0].start + " " + tomEvs[0].text + (tomEvs.length > 1 ? " 等 " + tomEvs.length + " 项" : "")
+    : (getDay(dateKey(tom)) ? "明日休息" : "明日不在计划内");
 }
 
 function renderTasks(nowMin){
@@ -237,11 +314,11 @@ function renderTasks(nowMin){
       const ok = document.createElement("button");
       ok.type = "button"; ok.className = "done-btn";
       ok.textContent = "✓ 完成";
-      ok.addEventListener("click", function(){ marks[evId(dateStr, i)] = "done"; saveMarks(); renderAll(); });
+      ok.addEventListener("click", function(){ markEv(dateStr, i, "done"); });
       const no = document.createElement("button");
       no.type = "button"; no.className = "no-btn";
       no.textContent = "未完成";
-      no.addEventListener("click", function(){ marks[evId(dateStr, i)] = "no"; saveMarks(); renderAll(); });
+      no.addEventListener("click", function(){ markEv(dateStr, i, "no"); });
       act.appendChild(ok); act.appendChild(no);
     } else if (st === "done" || st === "no"){
       const undo = document.createElement("button");
@@ -258,26 +335,105 @@ function renderTasks(nowMin){
   });
 }
 
+function markEv(dateStr, i, s){
+  marks[evId(dateStr, i)] = {s:s, t:new Date().toISOString()};
+  saveMarks();
+  renderAll();
+}
+
 function renderStats(nowMin){
   const dateStr = dateKey(viewDate);
   const evs = dayEvents(dateStr);
-  const done = evs.filter(function(ev){ return marks[evId(dateStr, evs.indexOf(ev))] === "done"; }).length;
+  const done = dayDoneCount(dateStr);
   const todoCnt = evs.filter(function(ev){ return statusOf(ev, dateStr, nowMin) === "todo"; }).length;
   $("stDone").textContent = done + "/" + evs.length;
   $("stTodo").textContent = todoCnt ? "待打卡 " + todoCnt + " 项" : "";
   $("barDone").style.width = evs.length ? (done / evs.length * 100) + "%" : "0%";
-  let total = 0, tdone = 0;
+  let total = 0, tdone = 0, cum = 0;
   SCHEDULE.days.forEach(function(day){
     day.events.forEach(function(ev, i){
       total++;
-      if (marks[evId(day.date, i)] === "done") tdone++;
+      const m = marks[evId(day.date, i)];
+      if (m && m.s === "done"){ tdone++; cum++; }
     });
   });
   $("stTotal").textContent = tdone + "/" + total;
   $("stTotalPct").textContent = total ? Math.round(tdone / total * 100) + "%" : "";
+  $("stCum").textContent = cum;
+  $("stStreak").textContent = streakDays() + " 天";
   const day = getDay(dateStr);
-  $("stDate").textContent = dateStr.slice(5).replace("-", ".");
-  $("stPhase").textContent = day ? (day.phase || "") + (day.weekday ? " " + day.weekday : "") : "计划外";
+  $("stDate") && ($("stDate").textContent = dateStr.slice(5).replace("-", "."));
+}
+
+function renderCalendar(){
+  const grid = $("calGrid");
+  grid.innerHTML = "";
+  const todayStr = dateKey(new Date());
+  SCHEDULE.days.forEach(function(day){
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "cell";
+    const evs = day.events;
+    if (!evs.length){
+      btn.classList.add("rest");
+      btn.innerHTML = "<div class='d'>" + day.date.slice(5).replace("-", ".") + "</div><div class='c'>休</div>";
+    } else {
+      const done = dayDoneCount(day.date);
+      if (done === evs.length) btn.classList.add("full");
+      else if (done > 0) btn.classList.add("part");
+      btn.innerHTML = "<div class='d'>" + day.date.slice(5).replace("-", ".") + "</div><div class='c'>" + done + "/" + evs.length + "</div>";
+    }
+    if (day.date === todayStr) btn.classList.add("cur");
+    btn.setAttribute("aria-label", day.date + " 完成 " + dayDoneCount(day.date) + "/" + evs.length);
+    btn.addEventListener("click", function(){ viewDate = parseKey(day.date); renderAll(); });
+    grid.appendChild(btn);
+  });
+}
+
+function renderLog(){
+  const list = $("logList");
+  const empty = $("logEmpty");
+  list.innerHTML = "";
+  const rows = [];
+  Object.keys(marks).forEach(function(k){
+    const m = marks[k];
+    const p = k.split("-");
+    const dateStr = p[0] + "-" + p[1] + "-" + p[2];
+    const idx = Number(p[3]);
+    const ev = dayEvents(dateStr)[idx];
+    if (!ev) return;
+    rows.push({date:dateStr, idx:idx, t:m.t, s:m.s, ev:ev});
+  });
+  rows.sort(function(a, b){ return (b.t || "") < (a.t || "") ? -1 : (b.t || "") > (a.t || "") ? 1 : 0; });
+  if (!rows.length){
+    list.hidden = true;
+    empty.hidden = false;
+    return;
+  }
+  list.hidden = false;
+  empty.hidden = true;
+  rows.slice(0, 40).forEach(function(r){
+    const li = document.createElement("li");
+    li.className = "log-row";
+    const tm = document.createElement("span");
+    tm.className = "log-time";
+    if (r.t){
+      const dt = new Date(r.t);
+      tm.textContent = r.date.slice(5).replace("-", ".") + " " + pad2(dt.getHours()) + ":" + pad2(dt.getMinutes());
+    } else {
+      tm.textContent = r.date.slice(5).replace("-", ".") + " 已记录";
+    }
+    const tx = document.createElement("span");
+    tx.className = "log-txt";
+    tx.textContent = phaseOf(r.ev.text) + " · " + r.ev.text;
+    const st = document.createElement("span");
+    st.className = r.s === "done" ? "log-ok" : "log-no";
+    st.textContent = r.s === "done" ? "✓ 完成" : "未完成";
+    li.appendChild(tm);
+    li.appendChild(tx);
+    li.appendChild(st);
+    list.appendChild(li);
+  });
 }
 
 function renderAll(){
@@ -292,7 +448,41 @@ function renderAll(){
   renderNow(nowMin);
   renderTasks(nowMin);
   renderStats(nowMin);
+  renderCalendar();
+  renderLog();
 }
+
+function exportData(){
+  const payload = {version:2, exportedAt:new Date().toISOString(), marks:marks};
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "408checkin-backup-" + dateKey(new Date()) + ".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+}
+function importData(file){
+  const reader = new FileReader();
+  reader.onload = function(){
+    try {
+      const obj = JSON.parse(String(reader.result));
+      const incoming = normalize(obj.marks || obj);
+      const before = Object.keys(marks).length;
+      Object.keys(incoming).forEach(function(k){ marks[k] = incoming[k]; });
+      saveMarks();
+      renderAll();
+      alert("导入成功：新增/更新 " + Object.keys(incoming).length + " 条记录（原有 " + before + " 条已保留）。");
+    } catch(e){
+      alert("导入失败：文件格式不正确。");
+    }
+  };
+  reader.readAsText(file);
+}
+
+marks = loadMarks();
+pruneMarks();
 
 $("prevDay").addEventListener("click", function(){
   viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() - 1);
@@ -308,6 +498,12 @@ $("datePick").addEventListener("change", function(){
   if (v) viewDate = parseKey(v);
   renderAll();
 });
+$("exportBtn").addEventListener("click", exportData);
+$("importBtn").addEventListener("click", function(){ $("importFile").click(); });
+$("importFile").addEventListener("change", function(){
+  if (this.files && this.files[0]) importData(this.files[0]);
+  this.value = "";
+});
 
 renderAll();
 setInterval(function(){
@@ -316,7 +512,11 @@ setInterval(function(){
   $("date").textContent = fmtDateCn(now);
   renderNow(now.getHours() * 60 + now.getMinutes());
 }, 1000);
-setInterval(function(){ renderTasks(new Date().getHours() * 60 + new Date().getMinutes()); renderStats(new Date().getHours() * 60 + new Date().getMinutes()); }, 15000);
+setInterval(function(){
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  renderTasks(nowMin);
+  renderStats(nowMin);
+}, 15000);
 </script>
 </body>
 </html>
