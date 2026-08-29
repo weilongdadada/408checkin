@@ -17,11 +17,16 @@ body{background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","PingF
 header{display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--line)}
 .logo{font-size:20px;font-weight:600;letter-spacing:3px;text-align:center}
 .logo small{display:block;color:var(--muted);font-size:12px;font-weight:400;letter-spacing:1px;margin-top:3px}
-.nav{display:flex;align-items:center;gap:10px;margin:14px 0 4px;flex-wrap:wrap}
-.nav button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:14px;font-family:inherit}
-.nav button:hover{background:var(--panel2)}
-.nav .cur{color:var(--text);font-weight:600;min-width:150px;text-align:center;font-variant-numeric:tabular-nums}
-.nav input[type=date]{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:13px;color-scheme:dark}
+.date-nav{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.date-nav button{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 16px;cursor:pointer;font-size:14px;font-family:inherit}
+.date-nav button:hover{background:var(--panel)}
+.date-now{min-width:190px;text-align:center}
+.date-now .d1{font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:1px}
+.date-now .d2{color:var(--muted);font-size:12px;margin-top:3px}
+.date-pick{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.date-pick input[type=date]{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13px;color-scheme:dark;flex:1;max-width:220px}
+.date-pick button{background:var(--strong);color:#101013;border:none;border-radius:9px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.date-pick button:hover{opacity:.92}
 .grid-wrap{display:grid;grid-template-columns:1fr;gap:14px;margin-top:12px}
 @media (min-width:760px){ .grid-wrap{grid-template-columns:repeat(3,1fr)} }
 .widget{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
@@ -115,15 +120,20 @@ footer{margin-top:26px;color:var(--dim);font-size:12px;text-align:center;line-he
     <div class="logo">408 学习打卡<small>王道408网课 · 每日打卡</small></div>
   </header>
 
-  <div class="nav">
-    <button type="button" id="prevDay">← 前一天</button>
-    <span class="cur" id="curDay">----</span>
-    <button type="button" id="nextDay">后一天 →</button>
-    <input type="date" id="datePick" aria-label="选择日期">
-    <button type="button" id="todayBtn">今天</button>
-  </div>
-
   <div class="grid-wrap">
+
+    <div class="widget wfull">
+      <div class="wtitle">日期选择</div>
+      <div class="date-nav">
+        <button type="button" id="prevDay">← 前一天</button>
+        <div class="date-now"><div class="d1" id="curDay">--</div><div class="d2" id="curWeek">----</div></div>
+        <button type="button" id="nextDay">后一天 →</button>
+      </div>
+      <div class="date-pick">
+        <input type="date" id="datePick" aria-label="选择日期">
+        <button type="button" id="todayBtn">回到今天</button>
+      </div>
+    </div>
 
     <div class="widget wfull">
       <div class="wtitle">当前时间</div>
@@ -821,7 +831,9 @@ function renderAll(){
   $("time").textContent = fmtClock(now);
   $("date").textContent = fmtDateCn(now);
   const dateStr = dateKey(viewDate);
-  $("curDay").textContent = dateStr.slice(0, 4) + "." + dateStr.slice(5, 7) + "." + dateStr.slice(8);
+  const curDayObj = getDay(dateStr);
+  $("curDay").textContent = dateStr.slice(5).replace("-", ".");
+  $("curWeek").textContent = curDayObj ? (curDayObj.weekday + " · " + dateStr.slice(0, 4)) : "计划外";
   $("datePick").value = dateStr;
   $("listTitle").textContent = dateStr === dateKey(new Date()) ? "今日任务" : dateStr + " 的任务";
   renderNow(nowMin);
