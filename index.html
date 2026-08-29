@@ -13,57 +13,51 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-.wrap{max-width:880px;margin:0 auto;padding:22px 18px 48px}
-header{display:flex;flex-direction:column;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--line)}
-.logo{font-size:21px;font-weight:600;letter-spacing:3px;text-align:center}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.logo{font-size:20px;font-weight:600;letter-spacing:3px;text-align:center}
 .logo small{display:block;color:var(--muted);font-size:12px;font-weight:400;letter-spacing:1px;margin-top:3px}
-.clock{text-align:center;width:100%}
-.clock .time{font-size:46px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.15;letter-spacing:2px}
-.clock .date{color:var(--muted);font-size:14px;margin-top:6px;letter-spacing:1px}
-.nav{display:flex;align-items:center;gap:10px;margin:16px 0 6px;flex-wrap:wrap}
+.nav{display:flex;align-items:center;gap:10px;margin:14px 0 4px;flex-wrap:wrap}
 .nav button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:14px;font-family:inherit}
 .nav button:hover{background:var(--panel2)}
 .nav .cur{color:var(--text);font-weight:600;min-width:150px;text-align:center;font-variant-numeric:tabular-nums}
 .nav input[type=date]{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:13px;color-scheme:dark}
-.stats{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0 16px}
-.stat{flex:1;min-width:140px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-.stat .k{color:var(--muted);font-size:12px}
-.stat .v{font-size:21px;font-weight:600;margin-top:5px;font-variant-numeric:tabular-nums}
-.stat .s{color:var(--dim);font-size:12px;margin-top:3px}
-.bar{height:4px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:8px}
+.grid-wrap{display:grid;grid-template-columns:1fr;gap:14px;margin-top:12px}
+@media (min-width:760px){ .grid-wrap{grid-template-columns:repeat(3,1fr)} }
+.widget{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.wtitle{font-size:12px;color:var(--muted);letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wv{font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.ws{color:var(--dim);font-size:12px;line-height:1.5}
+.bar{height:4px;background:var(--panel2);border-radius:99px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .3s ease}
-.now-card{background:linear-gradient(140deg,#1a1a1f,#101013);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:8px}
-.now-card .tag{display:inline-block;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:2px 12px;margin-bottom:12px;letter-spacing:1px}
-.now-card .big{font-size:16px;line-height:1.7}
-.now-card .sub{color:var(--muted);font-size:13px;margin-top:8px}
-.now-card .sub b{color:var(--text);font-weight:500}
-.now-card .next{color:var(--dim);font-size:12.5px;margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
-.reward{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:14px 0}
-.reward-top{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.reward .k{color:var(--muted);font-size:12px}
-.reward .v{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:3px}
-.reward .s{color:var(--dim);font-size:12px;margin-top:3px}
-.reward button{margin-left:auto;background:var(--strong);color:#101013;border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
-.reward button:disabled{background:var(--panel2);color:var(--muted);cursor:not-allowed}
-.reward .rules{color:var(--dim);font-size:12px;margin-top:12px;border-top:1px solid var(--line);padding-top:10px;line-height:1.8}
-.seat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:14px 0}
-.seat-top{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.seat .k{color:var(--muted);font-size:12px}
-.seat .v{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:3px}
-.seat .s{color:var(--dim);font-size:12px;margin-top:3px}
+.wfull{grid-column:1/-1}
+@media (min-width:760px){ .wspan2{grid-column:span 2} }
+.clock{text-align:center;padding:6px 0 2px}
+.clock .time{font-size:42px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.15;letter-spacing:2px}
+.clock .date{color:var(--muted);font-size:14px;margin-top:4px;letter-spacing:1px}
+.now-body .tag{display:inline-block;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:2px 12px;letter-spacing:1px}
+.now-body .big{font-size:16px;line-height:1.7}
+.now-body .sub{color:var(--muted);font-size:13px;margin-top:6px}
+.now-body .sub b{color:var(--text);font-weight:500}
+.now-body .next{color:var(--dim);font-size:12.5px;margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.mini-row{display:flex;gap:16px;flex-wrap:wrap}
+.mini{flex:1;min-width:96px}
+#redeemBtn{background:var(--strong);color:#101013;border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:2px}
+#redeemBtn:disabled{background:var(--panel2);color:var(--muted);cursor:not-allowed}
+.rules{color:var(--dim);font-size:12px;border-top:1px solid var(--line);padding-top:8px;line-height:1.7}
+.seat-top{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .seat-btns{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
-.seat-btns button{border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid var(--line);background:var(--panel2);color:var(--text)}
+.seat-btns button{border-radius:10px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid var(--line);background:var(--panel2);color:var(--text)}
 .seat-btns button.in-btn{background:var(--ok);color:#0d0d0d;border-color:var(--ok)}
 .seat-btns button.out-btn{background:var(--strong);color:#101013;border-color:var(--strong)}
 .seat-btns button:disabled{background:var(--panel2);color:var(--muted);cursor:not-allowed}
-.seat-log{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:6px}
+.seat-log{border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:6px}
 .seat-log .row{display:flex;gap:12px;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
 .seat-log .row b{color:var(--text);font-weight:500}
-h2{font-size:15px;font-weight:600;margin:24px 0 10px;letter-spacing:1px}
-ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
-li.task{display:flex;align-items:flex-start;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+li.task{display:flex;align-items:flex-start;gap:14px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 14px}
 li.task.dim{opacity:.55}
-.range{min-width:110px;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);padding-top:2px}
+.range{min-width:104px;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);padding-top:2px}
 .body{flex:1;font-size:14px;line-height:1.6;min-width:0}
 .body .ph{color:var(--muted);font-size:12px;margin-right:8px}
 .body .note{color:var(--amber);font-size:12px;margin-top:5px;line-height:1.5}
@@ -73,19 +67,19 @@ li.task.dim{opacity:.55}
 .status.done{background:var(--ok);border-color:var(--ok);color:#0d0d0d;font-weight:600}
 .status.no{background:var(--no);border-color:var(--no);color:#160b0b;font-weight:600}
 .act{display:flex;gap:8px;align-items:center}
-.act button{border-radius:9px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;border:1px solid var(--line);background:var(--panel2);color:var(--text)}
+.act button{border-radius:9px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit;border:1px solid var(--line);background:var(--panel2);color:var(--text)}
 .act button.done-btn{background:var(--strong);color:#101013;border-color:var(--strong);font-weight:600}
 .act button.no-btn{background:transparent;color:var(--muted)}
 .act button.tiny{background:none;border:none;color:var(--muted);font-size:12px;padding:6px 4px;text-decoration:underline;cursor:pointer}
-.empty{color:var(--muted);font-size:14px;padding:18px 4px;line-height:1.8}
-.bar-row{display:flex;align-items:center;gap:12px;margin:10px 0}
-.bar-row .name{min-width:96px;color:var(--muted);font-size:13px}
+.empty{color:var(--muted);font-size:14px;padding:14px 2px;line-height:1.8}
+.bar-row{display:flex;align-items:center;gap:12px;margin:9px 0}
+.bar-row .name{min-width:86px;color:var(--muted);font-size:13px}
 .bar-row .track{flex:1;height:8px;background:var(--panel2);border-radius:99px;overflow:hidden}
 .bar-row .track i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .3s ease}
-.bar-row .pct{min-width:56px;text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
-.chart-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 12px 8px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
-.cell{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center;cursor:pointer;font-family:inherit;color:var(--text);transition:transform .1s ease}
+.bar-row .pct{min-width:54px;text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
+svg text{font-family:inherit}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px}
+.cell{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;font-family:inherit;color:var(--text);transition:transform .1s ease}
 .cell:hover{transform:translateY(-1px)}
 .cell .d{color:var(--muted);font-size:11px}
 .cell .c{font-variant-numeric:tabular-nums;margin-top:4px;font-size:12px}
@@ -93,27 +87,25 @@ li.task.dim{opacity:.55}
 .cell.part{background:#3a3017;border-color:#5c4b1f;color:#f2e2b6}
 .cell.rest{background:#121215;color:var(--dim)}
 .cell.cur{outline:2px solid var(--strong)}
-.legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin:12px 0 6px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 ul.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
-li.log-row{display:flex;gap:12px;align-items:baseline;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px}
-.log-time{color:var(--muted);font-variant-numeric:tabular-nums;min-width:120px;font-size:12px}
+li.log-row{display:flex;gap:12px;align-items:baseline;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px;flex-wrap:wrap}
+.log-time{color:var(--muted);font-variant-numeric:tabular-nums;min-width:112px;font-size:12px}
 .log-txt{flex:1;min-width:0;line-height:1.5}
 .log-ok{color:var(--ok);font-weight:600}
 .log-no{color:var(--no);font-weight:600}
 .pt-ok{color:var(--ok);font-weight:600;min-width:34px;text-align:right}
 .pt-no{color:var(--no);font-weight:600;min-width:34px;text-align:right}
-.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-.tools button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 16px;cursor:pointer;font-size:13px;font-family:inherit}
-.tools button:hover{background:var(--panel2)}
-footer{margin-top:30px;color:var(--dim);font-size:12px;text-align:center;line-height:1.8}
+.tools{display:flex;gap:10px;flex-wrap:wrap}
+.tools button{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 16px;cursor:pointer;font-size:13px;font-family:inherit}
+.tools button:hover{background:var(--panel)}
+footer{margin-top:26px;color:var(--dim);font-size:12px;text-align:center;line-height:1.8}
 @media (max-width:600px){
-  header{align-items:center}
-  .clock{text-align:center}
-  li.task{flex-wrap:wrap}
   .range{min-width:0}
   .act{margin-left:auto}
   .seat-btns{margin-left:0}
+  li.log-row{align-items:flex-start}
 }
 </style>
 </head>
@@ -121,10 +113,6 @@ footer{margin-top:30px;color:var(--dim);font-size:12px;text-align:center;line-he
 <div class="wrap">
   <header>
     <div class="logo">408 学习打卡<small>王道408网课 · 每日打卡</small></div>
-    <div class="clock">
-      <div class="time" id="time">--:--:--</div>
-      <div class="date" id="date">----</div>
-    </div>
   </header>
 
   <div class="nav">
@@ -135,72 +123,122 @@ footer{margin-top:30px;color:var(--dim);font-size:12px;text-align:center;line-he
     <button type="button" id="todayBtn">今天</button>
   </div>
 
-  <div class="stats">
-    <div class="stat"><div class="k">今日完成</div><div class="v" id="stDone">0/0</div><div class="s" id="stTodo"></div><div class="bar"><i id="barDone" style="width:0%"></i></div></div>
-    <div class="stat"><div class="k">总进度</div><div class="v" id="stTotal">0/0</div><div class="s" id="stTotalPct"></div></div>
-    <div class="stat"><div class="k">累计完成</div><div class="v" id="stCum">0</div><div class="s">全部任务打卡次数</div></div>
-    <div class="stat"><div class="k">连续打卡</div><div class="v" id="stStreak">0 天</div><div class="s">每日全部完成</div></div>
-    <div class="stat"><div class="k">学习时长</div><div class="v" id="stDur">0</div><div class="s" id="stDurSub">总时长 0</div><div class="bar"><i id="barDur" style="width:0%"></i></div></div>
-  </div>
+  <div class="grid-wrap">
 
-  <div class="now-card" aria-live="polite">
-    <span class="tag" id="nowTag">当前</span>
-    <div class="big" id="nowText">加载中…</div>
-    <div class="sub" id="nowSub"></div>
-    <div class="next" id="nowNext"></div>
-  </div>
-
-  <div class="seat">
-    <div class="seat-top">
-      <div><div class="k">今日在考研位</div><div class="v" id="seatToday">0 分钟</div><div class="s" id="seatStatus">未打卡</div></div>
-      <div><div class="k">本周累计</div><div class="v" id="seatWeek">0</div><div class="s">周一至周日</div></div>
-      <div class="seat-btns">
-        <button type="button" id="seatIn" class="in-btn">🚪 到达考研位</button>
-        <button type="button" id="seatOut" class="out-btn">🏠 离开考研位</button>
+    <div class="widget wfull">
+      <div class="wtitle">当前时间</div>
+      <div class="clock">
+        <div class="time" id="time">--:--:--</div>
+        <div class="date" id="date">----</div>
       </div>
     </div>
-    <div class="seat-log" id="seatLog"></div>
-  </div>
 
-  <div class="reward">
-    <div class="reward-top">
-      <div><div class="k">我的积分</div><div class="v" id="ptNow">0</div><div class="s">完成 +10 ｜ 未完成 -5 ｜ 每日全勤 +10</div></div>
-      <div><div class="k">网吧券</div><div class="v" id="ptTickets">0 次</div><div class="s" id="ptNext"></div></div>
-      <button type="button" id="redeemBtn">🎮 兑换网吧券</button>
+    <div class="widget">
+      <div class="wtitle">今日完成</div>
+      <div class="wv" id="stDone">0/0</div>
+      <div class="ws" id="stTodo"></div>
+      <div class="bar"><i id="barDone" style="width:0%"></i></div>
     </div>
-    <div class="rules" id="ptRule">每累计 150 分获得 1 次网吧券 · 每周最多兑换 1 次 · 本周状态：<span id="ptWeek"></span></div>
-  </div>
+    <div class="widget">
+      <div class="wtitle">总进度</div>
+      <div class="wv" id="stTotal">0/0</div>
+      <div class="ws" id="stTotalPct"></div>
+    </div>
+    <div class="widget">
+      <div class="wtitle">累计完成</div>
+      <div class="wv" id="stCum">0</div>
+      <div class="ws">全部任务打卡次数</div>
+    </div>
+    <div class="widget">
+      <div class="wtitle">连续打卡</div>
+      <div class="wv" id="stStreak">0 天</div>
+      <div class="ws">每日全部完成</div>
+    </div>
+    <div class="widget wspan2">
+      <div class="wtitle">学习时长</div>
+      <div class="wv" id="stDur">0</div>
+      <div class="ws" id="stDurSub">总时长 0</div>
+      <div class="bar"><i id="barDur" style="width:0%"></i></div>
+    </div>
 
-  <h2 id="listTitle">今日任务</h2>
-  <ul class="tasks" id="taskList"></ul>
-  <div class="empty" id="emptyNote" hidden></div>
+    <div class="widget wspan2">
+      <div class="wtitle">现在该做什么</div>
+      <div class="now-body">
+        <span class="tag" id="nowTag">当前</span>
+        <div class="big" id="nowText">加载中…</div>
+        <div class="sub" id="nowSub"></div>
+        <div class="next" id="nowNext"></div>
+      </div>
+    </div>
+    <div class="widget">
+      <div class="wtitle">积分与奖励</div>
+      <div class="mini-row">
+        <div class="mini"><div class="wv" id="ptNow">0</div><div class="ws">我的积分</div></div>
+        <div class="mini"><div class="wv" id="ptTickets">0 次</div><div class="ws" id="ptNext"></div></div>
+      </div>
+      <button type="button" id="redeemBtn">🎮 兑换网吧券</button>
+      <div class="rules">完成 +10 ｜ 未完成 -5 ｜ 每日全勤 +10<br>每累计 150 分获得 1 次网吧券 · 每周最多 1 次 · 本周：<span id="ptWeek"></span></div>
+    </div>
 
-  <h2>各科进度</h2>
-  <div id="courseBars"></div>
+    <div class="widget wspan2">
+      <div class="wtitle">考研位打卡</div>
+      <div class="seat-top">
+        <div><div class="wv" id="seatToday">0 分钟</div><div class="ws" id="seatStatus">未打卡</div></div>
+        <div><div class="wv" id="seatWeek">0</div><div class="ws">本周累计（周一至周日）</div></div>
+        <div class="seat-btns">
+          <button type="button" id="seatIn" class="in-btn">🚪 到达考研位</button>
+          <button type="button" id="seatOut" class="out-btn">🏠 离开考研位</button>
+        </div>
+      </div>
+      <div class="seat-log" id="seatLog"></div>
+    </div>
+    <div class="widget">
+      <div class="wtitle">各科进度</div>
+      <div id="courseBars"></div>
+    </div>
 
-  <h2>完成率趋势</h2>
-  <div class="chart-box" id="trendChart"></div>
+    <div class="widget wfull">
+      <div class="wtitle" id="listTitle">今日任务</div>
+      <ul class="tasks" id="taskList"></ul>
+      <div class="empty" id="emptyNote" hidden></div>
+    </div>
 
-  <h2>在座时长趋势</h2>
-  <div class="chart-box" id="seatChart"></div>
+    <div class="widget wfull">
+      <div class="wtitle">完成率趋势</div>
+      <div id="trendChart"></div>
+    </div>
 
-  <h2>打卡日历</h2>
-  <div class="legend">
-    <span><i style="background:var(--ok)"></i>全部完成</span>
-    <span><i style="background:var(--amber)"></i>部分完成</span>
-    <span><i style="background:var(--panel2)"></i>未打卡</span>
-    <span><i style="background:#121215;border:1px solid var(--line)"></i>休息日</span>
-  </div>
-  <div class="grid" id="calGrid"></div>
+    <div class="widget wfull">
+      <div class="wtitle">在座时长趋势</div>
+      <div id="seatChart"></div>
+    </div>
 
-  <h2>最近打卡记录</h2>
-  <ul class="log" id="logList"></ul>
-  <div class="empty" id="logEmpty" hidden>还没有打卡记录，完成第一个任务后这里会显示。</div>
+    <div class="widget wfull">
+      <div class="wtitle">打卡日历</div>
+      <div class="legend">
+        <span><i style="background:var(--ok)"></i>全部完成</span>
+        <span><i style="background:var(--amber)"></i>部分完成</span>
+        <span><i style="background:var(--panel2)"></i>未打卡</span>
+        <span><i style="background:#121215;border:1px solid var(--line)"></i>休息日</span>
+      </div>
+      <div class="grid" id="calGrid"></div>
+    </div>
 
-  <div class="tools">
-    <button type="button" id="exportBtn">导出打卡记录</button>
-    <button type="button" id="importBtn">导入打卡记录</button>
-    <input type="file" id="importFile" accept=".json,application/json" hidden>
+    <div class="widget wfull">
+      <div class="wtitle">最近打卡记录</div>
+      <ul class="log" id="logList"></ul>
+      <div class="empty" id="logEmpty" hidden>还没有打卡记录，完成第一个任务后这里会显示。</div>
+    </div>
+
+    <div class="widget wfull">
+      <div class="wtitle">数据备份</div>
+      <div class="tools">
+        <button type="button" id="exportBtn">导出打卡记录</button>
+        <button type="button" id="importBtn">导入打卡记录</button>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
+      </div>
+    </div>
+
   </div>
 
   <footer>数据来源：王道408网课学习计划表（2026.08.29–09.28）<br>打卡与在座记录仅保存在本浏览器，支持导出/导入备份，不会上传。</footer>
@@ -376,10 +414,6 @@ function fmtHM(min){
   const h = Math.floor(min / 60), m = min % 60;
   return h ? h + "小时" + m + "分" : m + "分钟";
 }
-function fmtHMshort(min){
-  const h = Math.floor(min / 60), m = min % 60;
-  return h ? h + "h" + pad2(m) + "m" : m + "m";
-}
 function hmOf(iso){
   const d = new Date(iso);
   return pad2(d.getHours()) + ":" + pad2(d.getMinutes());
@@ -412,9 +446,8 @@ function renderSeat(){
     rows.forEach(function(s){
       const r = document.createElement("div");
       r.className = "row";
-      const openNow = !s.o;
       const span = document.createElement("span");
-      span.innerHTML = hmOf(s.i) + " – " + (openNow ? "至今" : hmOf(s.o)) + "　<b>" + fmtHM(sessionMinutes(s, now)) + "</b>";
+      span.innerHTML = hmOf(s.i) + " – " + (s.o ? hmOf(s.o) : "至今") + "　<b>" + fmtHM(sessionMinutes(s, new Date())) + "</b>";
       r.appendChild(span);
       log.appendChild(r);
     });
@@ -431,7 +464,7 @@ function renderSeatChart(){
     return;
   }
   const maxMin = data.reduce(function(a, x){ return Math.max(a, x.min); }, 0);
-  const yMax = Math.max(2, Math.ceil(maxMin / 120) * 2); // 小时刻度
+  const yMax = Math.max(2, Math.ceil(maxMin / 120) * 2);
   const W = box.clientWidth || 640, H = 170, L = 42, R = 12, T = 14, B = 22;
   const x = function(i){ return L + i * (W - L - R) / Math.max(1, data.length - 1); };
   const y = function(min){ return T + (H - T - B) * (1 - min / (yMax * 60)); };
@@ -446,8 +479,7 @@ function renderSeatChart(){
       svg += '<text x="' + x(i) + '" y="' + (H - 6) + '" fill="#9b9ba4" font-size="9" text-anchor="middle">' + d.date.slice(5).replace("-", ".") + "</text>";
     }
   });
-  const pts = data.map(function(d, i){ return {x:i, y:y(d.min)}; });
-  const line = pts.map(function(p){ return x(p.x).toFixed(1) + "," + p.y.toFixed(1); }).join(" ");
+  const line = data.map(function(d, i){ return x(i).toFixed(1) + "," + y(d.min).toFixed(1); }).join(" ");
   svg += '<polyline points="' + line + '" fill="none" stroke="#8ab4f8" stroke-width="1.5"/>';
   data.forEach(function(d, i){
     if (d.min <= 0) return;
