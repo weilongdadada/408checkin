@@ -15,8 +15,8 @@ html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 .wrap{max-width:960px;margin:0 auto;padding:20px 16px 48px}
 header{display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--line)}
-.logo{font-size:20px;font-weight:600;letter-spacing:3px;text-align:center}
-.logo small{display:block;color:var(--muted);font-size:12px;font-weight:400;letter-spacing:1px;margin-top:3px}
+.logo{font-size:34px;font-weight:700;letter-spacing:8px;text-align:center;padding-top:10px}
+.logo small{display:block;color:var(--muted);font-size:13px;font-weight:400;letter-spacing:2px;margin-top:6px}
 .date-nav{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
 .date-nav button{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 16px;cursor:pointer;font-size:14px;font-family:inherit}
 .date-nav button:hover{background:var(--panel)}
@@ -123,6 +123,14 @@ footer{margin-top:26px;color:var(--dim);font-size:12px;text-align:center;line-he
   <div class="grid-wrap">
 
     <div class="widget wfull">
+      <div class="wtitle">当前时间</div>
+      <div class="clock">
+        <div class="time" id="time">--:--:--</div>
+        <div class="date" id="date">----</div>
+      </div>
+    </div>
+
+    <div class="widget wfull">
       <div class="wtitle">日期选择</div>
       <div class="date-nav">
         <button type="button" id="prevDay">← 前一天</button>
@@ -132,14 +140,6 @@ footer{margin-top:26px;color:var(--dim);font-size:12px;text-align:center;line-he
       <div class="date-pick">
         <input type="date" id="datePick" aria-label="选择日期">
         <button type="button" id="todayBtn">回到今天</button>
-      </div>
-    </div>
-
-    <div class="widget wfull">
-      <div class="wtitle">当前时间</div>
-      <div class="clock">
-        <div class="time" id="time">--:--:--</div>
-        <div class="date" id="date">----</div>
       </div>
     </div>
 
@@ -155,16 +155,6 @@ footer{margin-top:26px;color:var(--dim);font-size:12px;text-align:center;line-he
       <div class="ws" id="stTotalPct"></div>
     </div>
     <div class="widget">
-      <div class="wtitle">累计完成</div>
-      <div class="wv" id="stCum">0</div>
-      <div class="ws">全部任务打卡次数</div>
-    </div>
-    <div class="widget">
-      <div class="wtitle">连续打卡</div>
-      <div class="wv" id="stStreak">0 天</div>
-      <div class="ws">每日全部完成</div>
-    </div>
-    <div class="widget wspan2">
       <div class="wtitle">学习时长</div>
       <div class="wv" id="stDur">0</div>
       <div class="ws" id="stDurSub">总时长 0</div>
@@ -665,8 +655,6 @@ function renderStats(nowMin){
   });
   $("stTotal").textContent = tdone + "/" + total;
   $("stTotalPct").textContent = total ? Math.round(tdone / total * 100) + "%" : "";
-  $("stCum").textContent = cum;
-  $("stStreak").textContent = streakDays() + " 天";
   $("stDur").textContent = fmtHM(doneDur);
   $("stDurSub").textContent = "总时长 " + fmtHM(totalDur);
   $("barDur").style.width = totalDur ? (doneDur / totalDur * 100) + "%" : "0%";
