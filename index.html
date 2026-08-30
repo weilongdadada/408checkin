@@ -155,7 +155,7 @@ footer{margin-top:26px;color:var(--dim);font-size:12px;text-align:center;line-he
     <div class="widget">
       <div class="wtitle">总进度</div>
       <div class="wv" id="stTotal">0/0</div>
-      <div class="ws" id="stTotalPct"></div>
+      <div class="bar-row2"><div class="bar"><i id="barTotal" style="width:0%"></i></div><span class="bar-pct" id="pctTotal">0%</span></div>
     </div>
     <div class="widget">
       <div class="wtitle">学习时长</div>
@@ -658,7 +658,8 @@ function renderStats(nowMin){
     });
   });
   $("stTotal").textContent = tdone + "/" + total;
-  $("stTotalPct").textContent = total ? Math.round(tdone / total * 100) + "%" : "";
+  $("barTotal").style.width = total ? (tdone / total * 100) + "%" : "0%";
+  $("pctTotal").textContent = total ? Math.round(tdone / total * 100) + "%" : "0%";
   $("stDur").textContent = fmtHM(doneDur);
   $("stDurSub").textContent = "总时长 " + fmtHM(totalDur);
   $("barDur").style.width = totalDur ? (doneDur / totalDur * 100) + "%" : "0%";
