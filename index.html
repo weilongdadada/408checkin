@@ -1052,6 +1052,13 @@ async function syncNow(){
   if (sync.token) syncPush();
 }
 
+async function syncRefresh(){
+  if (!sync.token){ syncStatus("未配置令牌"); return; }
+  syncStatus("正在自动同步…");
+  await syncPull();
+  if (sync.token) syncPush();
+}
+
 loadSync();
 syncConfig();
 
@@ -1084,7 +1091,7 @@ $("syncBtn").addEventListener("click", function(){ syncNow(); });
 $("syncClear").addEventListener("click", function(){ sync.token = ""; syncSha = null; saveSync(); syncConfig(); syncStatus("已断开同步"); });
 
 renderAll();
-if (sync.token) syncPull();
+syncRefresh();
 setInterval(function(){
   const now = new Date();
   $("time").textContent = fmtClock(now);
