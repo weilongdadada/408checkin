@@ -338,6 +338,9 @@ function statusOf(ev, dateStr, nowMin){
   const id = evId(dateStr, dayEvents(dateStr).indexOf(ev));
   const mk = marks[id];
   if (mk) return mk.s;
+  const todayStr = dateKey(new Date());
+  if (dateStr < todayStr) return "todo";
+  if (dateStr > todayStr) return "pending";
   const s = toMin(ev.start), e = toMin(ev.end);
   if (nowMin < s) return "pending";
   if (nowMin < e) return "doing";
@@ -503,6 +506,7 @@ const $ = function(id){ return document.getElementById(id); };
 
 function renderNow(nowMin){
   const dateStr = dateKey(viewDate);
+  const todayStr = dateKey(new Date());
   const evs = dayEvents(dateStr);
   const day = getDay(dateStr);
   const head = $("nowTag"), big = $("nowText"), sub = $("nowSub"), badge = $("selfBadge");
@@ -512,18 +516,36 @@ function renderNow(nowMin){
 
   function isSelf(t){ return String(t).indexOf("自学") === 0; }
   function paintHead(txt, cls){ head.textContent = txt; head.className = "now-head " + cls; }
+  function resetBig(){ big.classList.remove("small"); }
   function paintBadge(item){
     const self = isSelf(item && item.text);
     badge.hidden = !self;
     if (self){
       const parts = String(item.text).split(" ");
-      const subject = parts[1] || "";
-      badge.textContent = "📖 自己看书：" + subject + "（不联网课）";
+      badge.textContent = "📖 自己看书：" + (parts[1] || "") + "（不联网课）";
     } else {
       badge.textContent = "";
     }
   }
-  function resetBig(){ big.classList.remove("small"); }
+
+  // 查看的不是今天：直接展示所选日期的第一项任务
+  if (dateStr !== todayStr){
+    if (!evs.length){
+      paintHead(day && day.remark ? day.remark : "休息", "next");
+      resetBig();
+      big.textContent = "这一天没有学习安排";
+      badge.hidden = true;
+      sub.textContent = "好好休息，养精蓄锐";
+    } else {
+      const item = evs[0];
+      paintHead("所选日期 · 第一项", "next");
+      resetBig();
+      big.textContent = item.text;
+      paintBadge(item);
+      sub.innerHTML = "时段 " + item.start + "–" + item.end + " ｜ 这是 " + dateStr.slice(5).replace("-", ".") + " 的安排";
+    }
+    return;
+  }
 
   if (doing){
     paintHead("● 正在进行", "doing");
