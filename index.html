@@ -44,11 +44,14 @@ header{display:flex;flex-direction:column;align-items:center;gap:8px;padding-bot
 .clock{text-align:center;padding:6px 0 2px}
 .clock .time{font-size:42px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.15;letter-spacing:2px}
 .clock .date{color:var(--muted);font-size:14px;margin-top:4px;letter-spacing:1px}
-.now-body .tag{display:inline-block;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:2px 12px;letter-spacing:1px}
-.now-body .big{font-size:16px;line-height:1.7}
-.now-body .sub{color:var(--muted);font-size:13px;margin-top:6px}
-.now-body .sub b{color:var(--text);font-weight:500}
-.now-body .next{color:var(--dim);font-size:12.5px;margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.now-body .now-head{font-size:16px;font-weight:700;letter-spacing:3px;margin-bottom:8px}
+.now-body .now-head.doing{color:var(--ok)}
+.now-body .now-head.next{color:var(--muted)}
+.now-body .now-title{font-size:20px;font-weight:600;line-height:1.7}
+.now-body .now-title.small{font-size:16px;font-weight:500;color:var(--text)}
+.now-body .now-badge{display:inline-block;margin-top:10px;font-size:13px;font-weight:600;color:#101013;background:var(--amber);border-radius:99px;padding:4px 14px}
+.now-body .now-sub{color:var(--muted);font-size:13px;margin-top:10px;line-height:1.6}
+.now-body .now-sub b{color:var(--text);font-weight:500}
 .mini-row{display:flex;gap:16px;flex-wrap:wrap}
 .mini{flex:1;min-width:96px}
 #redeemBtn{background:var(--strong);color:#101013;border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:2px}
@@ -169,10 +172,10 @@ footer{margin-top:26px;color:var(--dim);font-size:12px;text-align:center;line-he
     <div class="widget wspan2">
       <div class="wtitle">现在该做什么</div>
       <div class="now-body">
-        <span class="tag" id="nowTag">当前</span>
-        <div class="big" id="nowText">加载中…</div>
-        <div class="sub" id="nowSub"></div>
-        <div class="next" id="nowNext"></div>
+        <div class="now-head" id="nowTag">加载中</div>
+        <div class="now-title" id="nowText">…</div>
+        <div class="now-badge" id="selfBadge" hidden></div>
+        <div class="now-sub" id="nowSub"></div>
       </div>
     </div>
     <div class="widget">
@@ -502,41 +505,64 @@ function renderNow(nowMin){
   const dateStr = dateKey(viewDate);
   const evs = dayEvents(dateStr);
   const day = getDay(dateStr);
-  const tag = $("nowTag"), big = $("nowText"), sub = $("nowSub"), next = $("nowNext");
+  const head = $("nowTag"), big = $("nowText"), sub = $("nowSub"), badge = $("selfBadge");
   const doing = evs.find(function(ev){ return statusOf(ev, dateStr, nowMin) === "doing"; });
   const nxt = evs.find(function(ev){ return statusOf(ev, dateStr, nowMin) === "pending"; });
   const todo = evs.filter(function(ev){ return statusOf(ev, dateStr, nowMin) === "todo"; });
+
+  function isSelf(t){ return String(t).indexOf("自学") === 0; }
+  function paintHead(txt, cls){ head.textContent = txt; head.className = "now-head " + cls; }
+  function paintBadge(item){
+    const self = isSelf(item && item.text);
+    badge.hidden = !self;
+    if (self){
+      const parts = String(item.text).split(" ");
+      const subject = parts[1] || "";
+      badge.textContent = "📖 自己看书：" + subject + "（不联网课）";
+    } else {
+      badge.textContent = "";
+    }
+  }
+  function resetBig(){ big.classList.remove("small"); }
+
   if (doing){
-    tag.textContent = "正在进行";
+    paintHead("● 正在进行", "doing");
+    resetBig();
     big.textContent = doing.text;
-    sub.innerHTML = phaseOf(doing.text) + " · " + doing.start + "–" + doing.end + " · 还剩约 <b>" + (toMin(doing.end) - nowMin) + "</b> 分钟";
+    paintBadge(doing);
+    sub.innerHTML = "时段 " + doing.start + "–" + doing.end + " ｜ 还剩约 <b>" + Math.max(0, toMin(doing.end) - nowMin) + "</b> 分钟";
   } else if (nxt){
-    tag.textContent = "接下来";
+    paintHead("接下来", "next");
+    big.classList.add("small");
     big.textContent = nxt.text;
-    sub.innerHTML = phaseOf(nxt.text) + " · " + nxt.start + "–" + nxt.end + " · <b>" + nxt.start + "</b> 开始";
+    paintBadge(nxt);
+    sub.innerHTML = "<b>" + nxt.start + "</b> 开始 · 时段 " + nxt.start + "–" + nxt.end;
   } else if (todo.length){
-    tag.textContent = "待打卡";
-    big.textContent = "有 " + todo.length + " 项安排已结束，请确认是否完成";
+    paintHead("待打卡", "next");
+    resetBig();
+    big.textContent = "有 " + todo.length + " 项已结束，请确认是否完成";
+    badge.hidden = true;
     sub.textContent = todo[0].start + "–" + todo[0].end + " " + todo[0].text;
   } else if (!day){
-    tag.textContent = "计划外";
+    paintHead("计划外", "next");
+    resetBig();
     big.textContent = "这一天不在计划范围内";
+    badge.hidden = true;
     sub.textContent = "计划期间：2026.09.06 – 2026.09.26";
   } else if (!evs.length){
-    tag.textContent = day.remark || "休息";
-    big.textContent = "今天没有安排" + (day.remark ? "（" + day.remark + "）" : "");
-    sub.textContent = "好好休息，明天继续";
+    paintHead(day.remark || "休息", "next");
+    resetBig();
+    big.textContent = "今天没有安排";
+    badge.hidden = true;
+    sub.textContent = "好好休息，养精蓄锐";
   } else {
     const doneCnt = dayDoneCount(dateStr);
-    tag.textContent = doneCnt === evs.length ? "全部完成" : "今日结束";
-    big.textContent = doneCnt === evs.length ? "今天的任务已全部完成，太棒了 🎉" : "今天的安排已全部结束";
+    paintHead(doneCnt === evs.length ? "✓ 全部完成" : "今日已结束", doneCnt === evs.length ? "doing" : "next");
+    resetBig();
+    big.textContent = doneCnt === evs.length ? "今天的任务全部完成，太棒了 🎉" : "今天的安排已全部结束";
+    badge.hidden = true;
     sub.textContent = "完成 " + doneCnt + " / " + evs.length + " 项";
   }
-  const tom = new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() + 1);
-  const tomEvs = dayEvents(dateKey(tom));
-  next.textContent = tomEvs.length
-    ? "明日预告：" + tomEvs[0].start + " " + tomEvs[0].text + (tomEvs.length > 1 ? " 等 " + tomEvs.length + " 项" : "")
-    : (getDay(dateKey(tom)) ? "明日休息" : "明日不在计划内");
 }
 
 function taskRow(ev, dateStr, i, nowMin){
