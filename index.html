@@ -66,6 +66,9 @@ header{display:flex;flex-direction:column;align-items:center;gap:8px;padding-bot
 .seat-log{border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:6px}
 .seat-log .row{display:flex;gap:12px;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
 .seat-log .row b{color:var(--text);font-weight:500}
+.seat-log .row>span{flex:1}
+.seat-log .row .del{background:none;border:none;color:var(--no);font-size:12px;text-decoration:underline;cursor:pointer;padding:2px 4px;font-family:inherit}
+.seat-log .row .cap{color:var(--dim);font-size:11px;margin-top:4px;width:100%}
 ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 li.task{display:flex;align-items:flex-start;gap:14px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 14px}
 li.task.dim{opacity:.55}
@@ -447,23 +450,46 @@ function renderSeat(){
   $("seatWeek").textContent = fmtHM(weekStudyMinutes(now));
   const log = $("seatLog");
   log.innerHTML = "";
-  const rows = study.sessions.filter(function(s){ return s.d === today; }).sort(function(a, b){ return a.i < b.i ? -1 : 1; });
-  if (!rows.length){
+  const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 13);
+  const list = study.sessions
+    .filter(function(s){ return s.d >= dateKey(cutoff); })
+    .sort(function(a, b){ return a.i < b.i ? 1 : -1; })
+    .slice(0, 15);
+  if (!list.length){
     const empty = document.createElement("div");
     empty.className = "row";
-    empty.textContent = "今天还没有到达记录。";
+    empty.textContent = "还没有到达记录，点“🚪 到达考研位”开始记录。";
     log.appendChild(empty);
   } else {
-    rows.forEach(function(s){
+    list.forEach(function(s){
       const r = document.createElement("div");
       r.className = "row";
       const span = document.createElement("span");
-      span.innerHTML = hmOf(s.i) + " – " + (s.o ? hmOf(s.o) : "至今") + "　<b>" + fmtHM(sessionMinutes(s, new Date())) + "</b>";
+      const dateLabel = s.d === today ? "" : s.d.slice(5).replace("-", ".") + " ";
+      span.innerHTML = dateLabel + hmOf(s.i) + " – " + (s.o ? hmOf(s.o) : "至今") + "　<b>" + fmtHM(sessionMinutes(s, now)) + "</b>";
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "del";
+      del.textContent = "删除";
+      del.addEventListener("click", function(){ deleteSeatSession(s.d, s.i); });
       r.appendChild(span);
+      r.appendChild(del);
       log.appendChild(r);
     });
+    const cap = document.createElement("div");
+    cap.className = "row cap";
+    cap.textContent = "最近14天记录（最多显示15条），可逐条删除；删除后时长统计会同步更新。";
+    log.appendChild(cap);
   }
 }
+function deleteSeatSession(d, i){
+  if (!confirm("确定删除这段到达记录吗？删除后时长统计会同步减少。")) return;
+  study.sessions = study.sessions.filter(function(s){ return !(s.d === d && s.i === i); });
+  saveStudy();
+  renderAll();
+  alert("已删除该段记录");
+}
+
 function renderSeatChart(){
   const box = $("seatChart");
   const now = new Date();
