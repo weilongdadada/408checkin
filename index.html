@@ -719,12 +719,16 @@ function markEv(dateStr, i, s){
 function renderStats(nowMin){
   const dateStr = dateKey(viewDate);
   const evs = dayEvents(dateStr);
-  const done = dayDoneCount(dateStr);
   const todoCnt = evs.filter(function(ev){ return statusOf(ev, dateStr, nowMin) === "todo"; }).length;
-  $("stDone").textContent = done + "/" + evs.length;
+  const doneMin = evs.reduce(function(acc, ev, i){
+    const m = marks[evId(dateStr, i)];
+    return acc + ((m && m.s === "done") ? (ev.dur || 0) : 0);
+  }, 0);
+  const totalMin = evs.reduce(function(acc, ev){ return acc + (ev.dur || 0); }, 0);
+  $("stDone").textContent = fmtHM(doneMin) + " / " + fmtHM(totalMin);
   $("stTodo").textContent = todoCnt ? "待打卡 " + todoCnt + " 项" : "待打卡 0 项";
-  $("barDone").style.width = evs.length ? (done / evs.length * 100) + "%" : "0%";
-  $("pctDone").textContent = evs.length ? Math.round(done / evs.length * 100) + "%" : "0%";
+  $("barDone").style.width = totalMin ? Math.round(doneMin / totalMin * 100) + "%" : "0%";
+  $("pctDone").textContent = totalMin ? Math.round(doneMin / totalMin * 100) + "%" : "0%";
   let total = 0, tdone = 0, cum = 0, totalDur = 0, doneDur = 0;
   SCHEDULE.days.forEach(function(day){
     day.events.forEach(function(ev, i){
